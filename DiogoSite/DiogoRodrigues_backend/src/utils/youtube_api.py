@@ -8,11 +8,10 @@ BASE_URL = "https://www.googleapis.com/youtube/v3"
 
 
 def get_channel_id():
-    """Obtém o channelId a partir do handle, com fallback via search"""
+    """Obtém o channelId diretamente do handle (sem fallback extra)"""
     if not YOUTUBE_API_KEY:
         raise Exception("YOUTUBE_API_KEY não definida")
 
-    # 1️⃣ Tenta via forHandle
     try:
         response = requests.get(
             f"{BASE_URL}/channels",
@@ -23,35 +22,16 @@ def get_channel_id():
             },
             timeout=10,
         )
-        if response.status_code == 200:
-            data = response.json()
-            if data.get("items"):
-                return data["items"][0]["id"]
-        else:
-            print(f"[YouTube] forHandle falhou: {response.status_code}")
-    except Exception as e:
-        print(f"[YouTube] Erro via forHandle: {e}")
+        response.raise_for_status()
+        data = response.json()
+        if not data.get("items"):
+            raise Exception("Canal não encontrado")
+        return data["items"][0]["id"]
 
-    # 2️⃣ Fallback via pesquisa
-    try:
-        response2 = requests.get(
-            f"{BASE_URL}/search",
-            params={
-                "part": "snippet",
-                "type": "channel",
-                "q": CHANNEL_HANDLE.replace("@", ""),
-                "key": YOUTUBE_API_KEY,
-            },
-            timeout=10,
-        )
-        response2.raise_for_status()
-        data2 = response2.json()
-        if data2.get("items"):
-            return data2["items"][0]["snippet"]["channelId"]
+    except requests.exceptions.HTTPError as http_err:
+        raise Exception(f"Erro HTTP {http_err.response.status_code}: {http_err.response.text}")
     except Exception as e:
-        raise Exception(f"Erro ao obter channelId via fallback: {e}")
-
-    raise Exception("Canal não encontrado via handle nem pesquisa")
+        raise Exception(f"Erro ao obter channelId: {e}")
 
 
 def get_channel_info():
@@ -69,19 +49,6 @@ def get_channel_info():
             },
             timeout=10,
         )
-        if response.status_code == 403:
-            # fallback via channelId
-            channel_id = get_channel_id()
-            response = requests.get(
-                f"{BASE_URL}/channels",
-                params={
-                    "part": "snippet,statistics,brandingSettings",
-                    "id": channel_id,
-                    "key": YOUTUBE_API_KEY,
-                },
-                timeout=10,
-            )
-
         response.raise_for_status()
         data = response.json()
         if not data.get("items"):
@@ -94,6 +61,9 @@ def get_channel_info():
             "stats": channel["statistics"],
             "banner": channel.get("brandingSettings", {}).get("image", {}),
         }
+
+    except requests.exceptions.HTTPError as http_err:
+        return {"error": f"Erro HTTP {http_err.response.status_code}: {http_err.response.text}"}
     except Exception as e:
         return {"error": str(e)}
 
