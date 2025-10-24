@@ -103,11 +103,12 @@ def get_live_status():
     if not YOUTUBE_API_KEY:
         return {"error": "YOUTUBE_API_KEY não definida"}
     try:
+        channel_id = get_channel_id()
         response = requests.get(
             f"{BASE_URL}/search",
             params={
                 "part": "snippet",
-                "channelId": get_channel_id(),
+                "channelId": channel_id,
                 "eventType": "live",
                 "type": "video",
                 "key": YOUTUBE_API_KEY,
@@ -126,11 +127,12 @@ def get_latest_videos(limit=6):
     if not YOUTUBE_API_KEY:
         return {"error": "YOUTUBE_API_KEY não definida"}
     try:
+        channel_id = get_channel_id()
         response = requests.get(
             f"{BASE_URL}/search",
             params={
                 "part": "snippet",
-                "channelId": get_channel_id(),
+                "channelId": channel_id,
                 "order": "date",
                 "maxResults": limit,
                 "key": YOUTUBE_API_KEY,
