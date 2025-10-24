@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: diogorodrigues-backend
+    env: python
+    rootDir: DiogoRodrigues_backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn src.main:app
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: CHANNEL_HANDLE
+        value: "@FulLShoT"
+      - key: CORS_ORIGIN
+        value: "https://DiogoRodrigues.onrender.com"
+      - key: SECRET_KEY
+        sync: false
+      - key: YOUTUBE_API_KEY
+        sync: false
+
+  - type: static
+    name: diogorodrigues-frontend
+    rootDir: DiogoRodrigues_frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_BASE
+        value: "https://DiogoRodrigues-backend.onrender.com/api"
