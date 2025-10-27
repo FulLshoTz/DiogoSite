@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from "react"
+import { FaYoutube, FaInstagram } from "react-icons/fa"
 
 export default function YouTubeSection() {
   const [info, setInfo] = useState(null)
@@ -6,7 +7,7 @@ export default function YouTubeSection() {
   const [live, setLive] = useState(false)
   const [error, setError] = useState(null)
 
-  const API_BASE = import.meta.env.VITE_API_BASE || '/api'
+  const API_BASE = "https://diogorodrigues-backend.onrender.com/api"
 
   useEffect(() => {
     const load = async () => {
@@ -18,7 +19,7 @@ export default function YouTubeSection() {
         ])
 
         if (!infoRes.ok || !liveRes.ok || !videosRes.ok)
-          throw new Error('Erro ao carregar dados')
+          throw new Error("Erro ao carregar dados")
 
         const infoData = await infoRes.json()
         const liveData = await liveRes.json()
@@ -35,69 +36,63 @@ export default function YouTubeSection() {
     load()
   }, [])
 
-  if (error) return <p className="text-red-500">{error}</p>
-  if (!info) return <p className="text-gray-400">A carregar dados do YouTube...</p>
+  if (error) return <p>Erro: {error}</p>
+  if (!info) return <p className="text-center mt-10">A carregar dados do YouTube...</p>
 
   return (
-    <section className="max-w-5xl w-full">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-        <div className="flex items-center space-x-4">
-          <img
-            src={info.thumbnails?.high?.url}
-            alt={info.title}
-            className="w-20 h-20 rounded-full border border-red-700"
-          />
-          <div>
-            <h2 className="text-2xl font-bold">{info.title}</h2>
-            <p className="text-gray-400">
-              {info.stats.subscriberCount} subs • {info.stats.viewCount} views
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-4 md:mt-0">
-          <span
-            className={`px-4 py-2 rounded-full text-sm font-semibold ${
-              live ? 'bg-red-600' : 'bg-gray-700'
-            }`}
+    <section className="max-w-6xl mx-auto mt-8">
+      <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
+        <div className="flex items-center gap-4">
+          <h2 className="text-3xl font-orbitron text-red-600">YouTube</h2>
+          <a
+            href="https://www.youtube.com/@FulLshoT"
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-2 bg-red-600 px-3 py-1 rounded hover:bg-red-700 transition"
           >
-            {live ? '🔴 Live agora' : '⚪ Offline'}
-          </span>
+            <FaYoutube /> Ver Canal
+          </a>
         </div>
+        <a
+          href="https://www.instagram.com/diofdx"
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center gap-2 bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 px-3 py-1 rounded text-white font-semibold hover:opacity-90 transition"
+        >
+          <FaInstagram /> Instagram
+        </a>
       </div>
 
       {live ? (
-        <div className="aspect-video bg-black rounded-lg overflow-hidden shadow-lg border border-red-700">
+        <div className="aspect-video mb-10">
           <iframe
-            width="100%"
-            height="100%"
-            src={`https://www.youtube.com/embed/live_stream?channel=${info.id}`}
-            title="Live Stream"
+            className="w-full h-full rounded-lg"
+            src={`https://www.youtube.com/embed/live_stream?channel=${info.channelId}`}
+            title="YouTube Live"
+            frameBorder="0"
             allowFullScreen
           ></iframe>
         </div>
       ) : (
-        <>
-          <h3 className="text-xl font-semibold mb-4 text-red-500">Últimos vídeos</h3>
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div>
+          <h3 className="text-2xl mb-4 font-orbitron">Últimos vídeos</h3>
+          <div className="grid md:grid-cols-3 gap-6">
             {videos.map(v => (
               <a
                 key={v.id}
                 href={`https://www.youtube.com/watch?v=${v.id}`}
                 target="_blank"
                 rel="noreferrer"
-                className="bg-neutral-900 p-2 rounded-lg hover:scale-105 transition border border-neutral-800"
+                className="bg-black/70 rounded-lg overflow-hidden shadow-lg hover:scale-105 hover:border-red-600 border-2 border-transparent transition-transform"
               >
-                <img
-                  src={v.thumbnail}
-                  alt={v.title}
-                  className="rounded-md mb-2 w-full"
-                />
-                <p className="text-sm font-medium">{v.title}</p>
+                <img src={v.thumbnail} alt={v.title} className="w-full" />
+                <div className="p-3">
+                  <p className="font-semibold">{v.title}</p>
+                </div>
               </a>
             ))}
           </div>
-        </>
+        </div>
       )}
     </section>
   )
