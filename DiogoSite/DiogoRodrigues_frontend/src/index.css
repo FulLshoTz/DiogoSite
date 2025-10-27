@@ -2,29 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap');
+
 body {
-  @apply bg-black text-white font-sans;
-  margin: 0;
-  overflow-x: hidden;
+  @apply text-white bg-neutral-900;
+  font-family: 'Orbitron', sans-serif;
 }
 
-/* Fundo animado subtil */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: repeating-linear-gradient(
-    -45deg,
-    rgba(255, 0, 0, 0.05),
-    rgba(255, 0, 0, 0.05) 2px,
-    transparent 2px,
-    transparent 12px
-  );
-  animation: move 10s linear infinite;
-  z-index: -1;
-}
-
-@keyframes move {
-  0% { background-position: 0 0; }
-  100% { background-position: 100px 100px; }
+/* Fundo tipo fibra de carbono */
+.bg-carbon {
+  background-color: #0a0a0a;
+  background-image: radial-gradient(#111 1px, transparent 1px),
+    radial-gradient(#111 1px, transparent 1px);
+  background-position: 0 0, 10px 10px;
+  background-size: 20px 20px;
 }
