@@ -3,6 +3,28 @@
 @tailwind utilities;
 
 body {
-  @apply bg-neutral-950 text-white;
-  font-family: 'Inter', sans-serif;
+  @apply bg-black text-white font-sans;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+/* Fundo animado subtil */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(255, 0, 0, 0.05),
+    rgba(255, 0, 0, 0.05) 2px,
+    transparent 2px,
+    transparent 12px
+  );
+  animation: move 10s linear infinite;
+  z-index: -1;
+}
+
+@keyframes move {
+  0% { background-position: 0 0; }
+  100% { background-position: 100px 100px; }
 }
