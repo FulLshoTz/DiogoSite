@@ -14,7 +14,7 @@ export default function YouTubeSection() {
         const [infoRes, liveRes, videosRes] = await Promise.all([
           fetch(`${API_BASE}/youtube/channel-info`),
           fetch(`${API_BASE}/youtube/live-status`),
-          fetch(`${API_BASE}/youtube/latest-videos?limit=6`)
+          fetch(`${API_BASE}/youtube/latest-videos?limit=3`)
         ])
 
         if (!infoRes.ok || !liveRes.ok || !videosRes.ok)
@@ -35,38 +35,70 @@ export default function YouTubeSection() {
     load()
   }, [])
 
-  if (error) return <p>Erro: {error}</p>
-  if (!info) return <p>A carregar dados do YouTube...</p>
+  if (error) return <p className="text-red-500">{error}</p>
+  if (!info) return <p className="text-gray-400">A carregar dados do YouTube...</p>
 
   return (
-    <section>
-      <h2>{info.title}</h2>
-      <p>{info.description}</p>
-      {live && <p style={{ color: 'red' }}>🔴 Live agora!</p>}
-      <h3>Últimos vídeos</h3>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '1rem'
-        }}
-      >
-        {videos.map(v => (
-          <a
-            key={v.id}
-            href={`https://www.youtube.com/watch?v=${v.id}`}
-            target="_blank"
-            rel="noreferrer"
+    <section className="max-w-5xl w-full">
+      <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+        <div className="flex items-center space-x-4">
+          <img
+            src={info.thumbnails?.high?.url}
+            alt={info.title}
+            className="w-20 h-20 rounded-full border border-red-700"
+          />
+          <div>
+            <h2 className="text-2xl font-bold">{info.title}</h2>
+            <p className="text-gray-400">
+              {info.stats.subscriberCount} subs • {info.stats.viewCount} views
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4 md:mt-0">
+          <span
+            className={`px-4 py-2 rounded-full text-sm font-semibold ${
+              live ? 'bg-red-600' : 'bg-gray-700'
+            }`}
           >
-            <img
-              src={v.thumbnail}
-              alt={v.title}
-              style={{ width: '100%', borderRadius: '8px' }}
-            />
-            <p>{v.title}</p>
-          </a>
-        ))}
+            {live ? '🔴 Live agora' : '⚪ Offline'}
+          </span>
+        </div>
       </div>
+
+      {live ? (
+        <div className="aspect-video bg-black rounded-lg overflow-hidden shadow-lg border border-red-700">
+          <iframe
+            width="100%"
+            height="100%"
+            src={`https://www.youtube.com/embed/live_stream?channel=${info.id}`}
+            title="Live Stream"
+            allowFullScreen
+          ></iframe>
+        </div>
+      ) : (
+        <>
+          <h3 className="text-xl font-semibold mb-4 text-red-500">Últimos vídeos</h3>
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {videos.map(v => (
+              <a
+                key={v.id}
+                href={`https://www.youtube.com/watch?v=${v.id}`}
+                target="_blank"
+                rel="noreferrer"
+                className="bg-neutral-900 p-2 rounded-lg hover:scale-105 transition border border-neutral-800"
+              >
+                <img
+                  src={v.thumbnail}
+                  alt={v.title}
+                  className="rounded-md mb-2 w-full"
+                />
+                <p className="text-sm font-medium">{v.title}</p>
+              </a>
+            ))}
+          </div>
+        </>
+      )}
     </section>
   )
 }
