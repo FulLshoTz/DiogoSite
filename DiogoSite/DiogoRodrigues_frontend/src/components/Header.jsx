@@ -1,35 +1,29 @@
-import React from 'react'
-import { FaYoutube, FaInstagram } from 'react-icons/fa'
-import logo from '../assets/logo.png' // coloca aqui o ficheiro WbibHsjQ.png e renomeia para logo.png
+import React, { useEffect, useState } from "react"
 
 export default function Header() {
-  return (
-    <header className="w-full bg-neutral-950 bg-opacity-90 backdrop-blur sticky top-0 z-50 shadow-lg border-b border-red-700">
-      <div className="max-w-6xl mx-auto flex justify-between items-center px-6 py-4">
-        <div className="flex items-center space-x-3">
-          <img src={logo} alt="logo" className="w-10 h-10 rounded-full border border-red-600" />
-          <h1 className="text-xl font-bold text-white">Diogo Rodrigues</h1>
-        </div>
+  const [live, setLive] = useState(false)
 
-        <nav className="flex space-x-6">
-          <a href="#" className="hover:text-red-500 transition">Início</a>
-          <a
-            href="https://www.youtube.com/@FulLShoT"
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-2 hover:text-red-500 transition"
-          >
-            <FaYoutube /> YouTube
-          </a>
-          <a
-            href="https://www.instagram.com/diofdx"
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-2 hover:text-red-500 transition"
-          >
-            <FaInstagram /> Instagram
-          </a>
-        </nav>
+  useEffect(() => {
+    fetch("https://diogorodrigues-backend.onrender.com/api/youtube/live-status")
+      .then(res => res.json())
+      .then(data => setLive(data.is_live))
+      .catch(() => setLive(false))
+  }, [])
+
+  return (
+    <header className="flex justify-between items-center px-6 py-4 border-b border-red-700 bg-black/80">
+      <div className="flex items-center gap-3">
+        <img src="/logo.png" alt="Logo" className="h-10 w-10 object-contain" />
+        <h1 className="text-2xl font-orbitron">Diogo Rodrigues</h1>
+      </div>
+      <div className="text-sm font-bold">
+        <span
+          className={`px-3 py-1 rounded ${
+            live ? "bg-green-600 text-white" : "bg-gray-600 text-white"
+          }`}
+        >
+          {live ? "🟢 Online" : "⚫ Offline"}
+        </span>
       </div>
     </header>
   )
