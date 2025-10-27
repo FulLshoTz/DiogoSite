@@ -1,15 +1,16 @@
-import React from 'react'
-import YouTubeSection from './components/YouTubeSection'
-import StatsSection from './components/StatsSection'
-import Header from './components/Header'
+import React, { useEffect, useState } from "react"
+import Header from "./components/Header"
+import Navbar from "./components/Navbar"
+import YouTubeSection from "./components/YouTubeSection"
+import "./index.css"
 
 export default function App() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen bg-carbon text-white">
       <Header />
-      <main className="flex flex-col items-center px-4 py-8 space-y-12">
+      <Navbar />
+      <main className="p-4 md:p-8">
         <YouTubeSection />
-        <StatsSection />
       </main>
     </div>
   )
