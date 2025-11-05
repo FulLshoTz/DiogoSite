@@ -2,54 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ===== FONTE ===== */
-@import url('https://fonts.cdnfonts.com/css/fytyra-tech');
-
-/* ===== ESTILO GLOBAL ===== */
+/* === Fundo fibra de carbono 3D === */
 body {
   @apply bg-neutral-950 text-white;
-  font-family: 'Fytyra Tech', sans-serif;
-  background-color: #0b0b0b;
-  background-image: radial-gradient(circle at 1px 1px, #222 1px, transparent 0);
-  background-size: 20px 20px;
+  font-family: 'Inter', sans-serif;
+  background-color: #0a0a0a;
+  background-image:
+    radial-gradient(circle at 1px 1px, #111 1px, transparent 0),
+    radial-gradient(circle at 3px 3px, #1a1a1a 1px, transparent 0);
+  background-size: 12px 12px;
   background-attachment: fixed;
+  animation: subtleMove 12s linear infinite alternate;
 }
 
-/* ===== HEADER FIXO ===== */
-header {
-  box-shadow: 0 2px 8px rgba(255, 0, 0, 0.1);
+@keyframes subtleMove {
+  0% {
+    background-position: 0 0, 6px 6px;
+  }
+  100% {
+    background-position: 12px 12px, 18px 18px;
+  }
 }
 
-/* ===== LINKS ===== */
-a {
-  transition: all 0.3s ease;
-}
-
-a:hover {
-  color: #ff0000;
-}
-
-/* ===== CARDS ===== */
+/* === Estilo base dos cards === */
 .card {
-  @apply bg-neutral-900 border border-neutral-700 rounded-lg shadow-lg p-4 transition-transform;
-}
-
-.card:hover {
-  transform: scale(1.03);
-  border-color: #ff0000;
-  box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
-}
-
-/* ===== SCROLLBAR ===== */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #ff0000;
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: #1a1a1a;
+  @apply bg-neutral-900 p-6 rounded-xl shadow-md border border-neutral-800 hover:border-red-600 transition-all duration-300 hover:scale-105;
 }
