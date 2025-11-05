@@ -20,7 +20,7 @@ a, button {
   @apply transition duration-300;
 }
 
-/* Scrollbar minimalista */
+/* Scrollbar racing */
 ::-webkit-scrollbar {
   width: 8px;
 }
