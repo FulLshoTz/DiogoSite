@@ -9,27 +9,33 @@ export default function YoutubeSection() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await fetch("https://diogorodrigues-backend.onrender.com/api/youtube/channel-info");
-        const info = await res.json();
-        if (info.error) throw new Error(info.error);
+        const resInfo = await fetch(
+          "https://diogorodrigues-backend.onrender.com/api/youtube/channel-info"
+        );
+        const info = await resInfo.json();
 
-        const videosRes = await fetch("https://diogorodrigues-backend.onrender.com/api/youtube/latest-videos");
-        const videosData = await videosRes.json();
+        const resVideos = await fetch(
+          "https://diogorodrigues-backend.onrender.com/api/youtube/latest-videos"
+        );
+        const videosData = await resVideos.json();
 
         setData({
-          title: info.title,
-          subs: info.stats.subscriberCount,
-          views: info.stats.viewCount,
-          banner: info.banner?.bannerExternalUrl,
-          thumb: info.thumbnails?.high?.url,
-          videos: videosData.videos || [],
+          title: info?.title || info?.thumbnails?.title || "Canal",
+          subs: info?.stats?.subscriberCount || 0,
+          views: info?.stats?.viewCount || 0,
+          thumb:
+            info?.thumbnails?.high?.url ||
+            info?.thumbnails?.medium?.url ||
+            info?.thumbnails?.default?.url ||
+            "",
+          banner: info?.banner?.bannerExternalUrl || "",
+          videos: videosData?.videos || [],
         });
       } catch (err) {
-        console.error("Erro ao carregar dados do YouTube:", err);
+        console.error("Erro ao carregar dados:", err);
         setError("Falha ao carregar dados do YouTube");
       }
     }
-
     fetchData();
   }, []);
 
@@ -50,14 +56,17 @@ export default function YoutubeSection() {
   const { title, subs, views, thumb, videos } = data;
 
   return (
-    <section className="max-w-7xl mx-auto text-center text-white">
+    <section className="max-w-7xl mx-auto text-center text-white px-4">
+      {/* Header do canal */}
       <div className="flex flex-col md:flex-row items-center justify-between mb-10">
         <div className="flex items-center gap-4">
-          <img
-            src={thumb}
-            alt={title}
-            className="w-20 h-20 rounded-full border-2 border-red-600"
-          />
+          {thumb && (
+            <img
+              src={thumb}
+              alt={title}
+              className="w-20 h-20 rounded-full border-2 border-red-600"
+            />
+          )}
           <div className="text-left">
             <h2 className="text-xl font-bold">{title}</h2>
             <p className="text-gray-400 text-sm">
@@ -70,6 +79,7 @@ export default function YoutubeSection() {
           </div>
         </div>
 
+        {/* Botões */}
         <div className="flex gap-4 mt-4 md:mt-0">
           <a
             href="https://www.youtube.com/@FulLshoT"
@@ -90,7 +100,13 @@ export default function YoutubeSection() {
         </div>
       </div>
 
-      <h3 className="text-2xl font-bold mb-6">Últimos vídeos</h3>
+      {/* Últimos vídeos */}
+      <h3 className="text-2xl font-bold mb-6 flex items-center justify-center gap-2">
+        <span role="img" aria-label="tv">
+          📺
+        </span>
+        Últimos Vídeos
+      </h3>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {videos.map((v) => (
@@ -111,6 +127,7 @@ export default function YoutubeSection() {
         ))}
       </div>
 
+      {/* Player Modal */}
       {selected && (
         <div
           className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
