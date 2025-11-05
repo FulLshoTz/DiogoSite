@@ -2,9 +2,12 @@ import React from "react";
 
 export default function Corridas() {
   return (
-    <div className="text-center mt-20">
-      <h1 className="text-3xl font-semibold text-red-500 mb-4">Corridas</h1>
-      <p className="text-gray-400">Aqui vais poder ver estatísticas e resultados das tuas corridas.</p>
-    </div>
+    <section className="pt-28 max-w-7xl mx-auto text-center">
+      <h2 className="text-4xl font-bold text-red-600 mb-6">Corridas</h2>
+      <p className="text-gray-400">
+        Aqui vais poder ver o histórico completo das tuas corridas, tempos,
+        classificações e highlights. (Em breve)
+      </p>
+    </section>
   );
 }
