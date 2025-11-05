@@ -51,7 +51,6 @@ export default function YoutubeSection() {
 
   return (
     <section className="max-w-7xl mx-auto text-center text-white">
-      {/* Header do canal */}
       <div className="flex flex-col md:flex-row items-center justify-between mb-10">
         <div className="flex items-center gap-4">
           <img
@@ -71,7 +70,6 @@ export default function YoutubeSection() {
           </div>
         </div>
 
-        {/* Botões */}
         <div className="flex gap-4 mt-4 md:mt-0">
           <a
             href="https://www.youtube.com/@FulLshoT"
@@ -92,7 +90,6 @@ export default function YoutubeSection() {
         </div>
       </div>
 
-      {/* Últimos vídeos */}
       <h3 className="text-2xl font-bold mb-6">Últimos vídeos</h3>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -114,7 +111,6 @@ export default function YoutubeSection() {
         ))}
       </div>
 
-      {/* Modal player */}
       {selected && (
         <div
           className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
