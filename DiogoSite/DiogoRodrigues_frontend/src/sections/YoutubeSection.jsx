@@ -92,4 +92,44 @@ export default function YoutubeSection() {
         </div>
       </div>
 
-      {/* Título
+      {/* Últimos vídeos */}
+      <h3 className="text-2xl font-bold mb-6">Últimos vídeos</h3>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {videos.map((v) => (
+          <div
+            key={v.id}
+            onClick={() => setSelected(v.id)}
+            className="cursor-pointer bg-neutral-900 hover:bg-neutral-800 transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-lg border border-red-700/30"
+          >
+            <img
+              src={v.thumbnail}
+              alt={v.title}
+              className="w-full h-48 object-cover"
+            />
+            <div className="p-3 text-left">
+              <p className="font-semibold">{v.title}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Modal player */}
+      {selected && (
+        <div
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
+          onClick={() => setSelected(null)}
+        >
+          <div className="relative w-full max-w-4xl mx-auto aspect-video">
+            <iframe
+              src={`https://www.youtube.com/embed/${selected}?autoplay=1`}
+              title="YouTube video player"
+              className="w-full h-full rounded-lg"
+              allowFullScreen
+            ></iframe>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
