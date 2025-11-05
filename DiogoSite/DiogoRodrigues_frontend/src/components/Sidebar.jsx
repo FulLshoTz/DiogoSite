@@ -8,12 +8,12 @@ export default function Sidebar() {
     { path: "/", icon: <FaYoutube />, label: "Vídeos" },
     { path: "/corridas", icon: <FaChartLine />, label: "Corridas" },
     { path: "/circuitos", icon: <FaFlagCheckered />, label: "Circuitos" },
-    { path: "/definicoes", icon: <FaCogs />, label: "Definições" }
+    { path: "/definicoes", icon: <FaCogs />, label: "Definições" },
   ];
 
   return (
-    <div className="fixed left-4 top-1/3 flex flex-col items-center gap-6">
-      {items.map((item) => (
+    <div className="fixed left-6 top-1/3 flex flex-col gap-6 z-40">
+      {items.map(item => (
         <Link
           key={item.path}
           to={item.path}
