@@ -1,131 +1,156 @@
 import React, { useEffect, useState } from "react";
-import { fetchChannelInfo, fetchLatestVideos } from "../api/youtube";
-import { FaYoutube, FaInstagram } from "react-icons/fa";
 
-const Home = () => {
+export default function Home() {
   const [info, setInfo] = useState(null);
   const [videos, setVideos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [isLive, setIsLive] = useState(false);
+  const [live, setLive] = useState(false);
+  const [error, setError] = useState(null);
+
+  const API_BASE = import.meta.env.VITE_API_BASE || "/api";
 
   useEffect(() => {
     const load = async () => {
-      const channelData = await fetchChannelInfo();
-      const videosData = await fetchLatestVideos();
-      setInfo(channelData);
-      setVideos(videosData.videos || []);
-      setLoading(false);
+      try {
+        const [infoRes, liveRes, videosRes] = await Promise.all([
+          fetch(`${API_BASE}/youtube/channel-info`),
+          fetch(`${API_BASE}/youtube/live-status`),
+          fetch(`${API_BASE}/youtube/latest-videos?limit=3`),
+        ]);
+
+        if (!infoRes.ok || !liveRes.ok || !videosRes.ok)
+          throw new Error("Erro ao carregar dados");
+
+        const infoData = await infoRes.json();
+        const liveData = await liveRes.json();
+        const videosData = await videosRes.json();
+
+        setInfo(infoData);
+        setLive(liveData.is_live);
+        setVideos(videosData.videos || []);
+      } catch (e) {
+        setError(e.message);
+      }
     };
+
     load();
   }, []);
 
-  if (loading) {
+  if (error)
     return (
-      <div className="flex items-center justify-center h-[70vh]">
-        <p className="text-gray-400 animate-pulse">A carregar dados do YouTube...</p>
-      </div>
+      <p className="text-red-500 text-center mt-10">
+        Erro: {error} — tenta novamente mais tarde.
+      </p>
     );
-  }
 
-  if (!info) {
+  if (!info)
     return (
-      <div className="flex items-center justify-center h-[70vh] text-red-500">
-        Erro ao carregar dados.
-      </div>
+      <p className="text-gray-400 text-center mt-10 animate-pulse">
+        A carregar dados do YouTube...
+      </p>
     );
-  }
 
   return (
-    <div className="space-y-10">
-      {/* Banner do canal */}
-      {info.banner?.bannerExternalUrl && (
-        <div className="relative rounded-xl overflow-hidden">
+    <section className="pt-28 max-w-7xl mx-auto">
+      {/* TOPO COM CANAIS */}
+      <div className="flex flex-wrap justify-between items-center mb-8 border-b border-neutral-800 pb-6">
+        <div className="flex items-center gap-4">
           <img
-            src={info.banner.bannerExternalUrl}
-            alt="Banner"
-            className="w-full h-64 object-cover opacity-80"
+            src={info.thumbnails?.high?.url}
+            alt="Canal"
+            className="w-20 h-20 rounded-full border-2 border-red-600"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent"></div>
-          <div className="absolute bottom-4 left-6">
-            <h1 className="text-3xl font-bold text-white drop-shadow-lg">{info.title}</h1>
+          <div>
+            <h2 className="text-3xl font-bold text-white">{info.title}</h2>
+            <p className="text-sm text-gray-400 mt-1">
+              {info.stats.subscriberCount} subs • {info.stats.viewCount} views
+            </p>
             <p
-              className={`text-sm font-medium ${
-                isLive ? "text-green-400" : "text-gray-400"
+              className={`mt-2 font-semibold ${
+                live ? "text-green-500" : "text-gray-500"
               }`}
             >
-              {isLive ? "● Live agora!" : "● Offline"}
+              {live ? "🟢 Online" : "⚫ Offline"}
             </p>
           </div>
         </div>
-      )}
 
-      {/* Estatísticas + Redes */}
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-        <div className="bg-neutral-900 p-6 rounded-lg shadow-lg w-full md:w-1/2 border border-neutral-700 hover:scale-[1.02] transition">
-          <h2 className="text-xl font-semibold mb-3 text-red-500">
-            Canal YouTube
-          </h2>
-          <p className="text-gray-300">{info.description}</p>
-          <div className="mt-3 flex items-center justify-between text-sm text-gray-400">
-            <span>👥 {info.stats.subscriberCount} subs</span>
-            <span>🎥 {info.stats.videoCount} vídeos</span>
-            <span>👁 {info.stats.viewCount} views</span>
-          </div>
+        {/* LINKS YOUTUBE / INSTAGRAM */}
+        <div className="flex gap-6 mt-6 md:mt-0">
           <a
             href="https://www.youtube.com/@FulLShoT"
             target="_blank"
             rel="noreferrer"
-            className="mt-4 inline-flex items-center bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition"
+            className="bg-red-600 hover:bg-red-700 px-5 py-2 rounded-lg font-semibold transition"
           >
-            <FaYoutube className="mr-2" /> Ver Canal
+            YouTube
           </a>
-        </div>
-
-        <div className="bg-neutral-900 p-6 rounded-lg shadow-lg w-full md:w-1/2 border border-neutral-700 hover:scale-[1.02] transition flex flex-col items-center">
-          <h2 className="text-xl font-semibold mb-3 text-red-500">
-            Instagram
-          </h2>
           <a
             href="https://www.instagram.com/diofdx"
             target="_blank"
             rel="noreferrer"
-            className="mt-2 inline-flex items-center bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 text-white px-4 py-2 rounded-lg transition hover:opacity-90"
+            className="bg-gradient-to-r from-pink-500 to-yellow-500 hover:opacity-90 px-5 py-2 rounded-lg font-semibold transition"
           >
-            <FaInstagram className="mr-2" /> Ver Perfil
+            Instagram
           </a>
         </div>
       </div>
 
-      {/* Últimos vídeos */}
-      <div>
-        <h2 className="text-2xl font-semibold text-red-500 mb-4">
-          Últimos Vídeos
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {videos.map((v) => (
-            <a
-              key={v.id}
-              href={`https://www.youtube.com/watch?v=${v.id}`}
-              target="_blank"
-              rel="noreferrer"
-              className="group block bg-neutral-900 border border-neutral-700 rounded-lg overflow-hidden hover:scale-[1.03] transition-transform"
-            >
-              <img
-                src={v.thumbnail}
-                alt={v.title}
-                className="w-full h-48 object-cover group-hover:opacity-90 transition"
-              />
-              <div className="p-3">
-                <p className="text-sm text-gray-300 group-hover:text-white">
+      {/* LIVE OU VÍDEOS */}
+      {live ? (
+        <div className="rounded-xl overflow-hidden shadow-lg border border-red-700">
+          <iframe
+            className="w-full aspect-video"
+            src={`https://www.youtube.com/embed/live_stream?channel=${info.id}`}
+            title="Live"
+            frameBorder="0"
+            allowFullScreen
+          ></iframe>
+        </div>
+      ) : (
+        <>
+          <h3 className="text-2xl font-bold mb-4 text-white">
+            Últimos Vídeos
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {videos.map((v) => (
+              <a
+                key={v.id}
+                href={`https://www.youtube.com/watch?v=${v.id}`}
+                target="_blank"
+                rel="noreferrer"
+                className="card group"
+              >
+                <div className="overflow-hidden rounded-lg">
+                  <img
+                    src={v.thumbnail}
+                    alt={v.title}
+                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <p className="mt-2 font-semibold text-white group-hover:text-red-500 transition-colors">
                   {v.title}
                 </p>
-              </div>
-            </a>
-          ))}
+              </a>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* CARDS DE ESTATÍSTICAS */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-12">
+        <div className="card text-center">
+          <p className="text-4xl font-bold text-red-500">35</p>
+          <p className="text-gray-400">Corridas</p>
+        </div>
+        <div className="card text-center">
+          <p className="text-4xl font-bold text-red-500">12</p>
+          <p className="text-gray-400">Circuitos</p>
+        </div>
+        <div className="card text-center">
+          <p className="text-4xl font-bold text-red-500">Top 5</p>
+          <p className="text-gray-400">Melhor Resultado</p>
         </div>
       </div>
-    </div>
+    </section>
   );
-};
-
-export default Home;
+}
