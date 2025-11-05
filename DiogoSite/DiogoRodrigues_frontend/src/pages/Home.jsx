@@ -5,10 +5,13 @@ export default function Home() {
   const [videos, setVideos] = useState([]);
   const [live, setLive] = useState(false);
   const [error, setError] = useState(null);
+  const [visible, setVisible] = useState(false);
 
   const API_BASE = import.meta.env.VITE_API_BASE || "/api";
 
   useEffect(() => {
+    setVisible(true); // faz fade-in do layout assim que carrega a página
+
     const load = async () => {
       try {
         const [infoRes, liveRes, videosRes] = await Promise.all([
@@ -35,34 +38,32 @@ export default function Home() {
     load();
   }, []);
 
-  if (error)
-    return (
-      <p className="text-red-500 text-center mt-10">
-        Erro: {error} — tenta novamente mais tarde.
-      </p>
-    );
-
-  if (!info)
-    return (
-      <p className="text-gray-400 text-center mt-10 animate-pulse">
-        A carregar dados do YouTube...
-      </p>
-    );
-
   return (
-    <section className="pt-28 max-w-7xl mx-auto">
-      {/* TOPO COM CANAIS */}
+    <section
+      className={`pt-28 max-w-7xl mx-auto transition-opacity duration-700 ${
+        visible ? "opacity-100" : "opacity-0"
+      }`}
+    >
+      {/* CABEÇALHO */}
       <div className="flex flex-wrap justify-between items-center mb-8 border-b border-neutral-800 pb-6">
         <div className="flex items-center gap-4">
-          <img
-            src={info.thumbnails?.high?.url}
-            alt="Canal"
-            className="w-20 h-20 rounded-full border-2 border-red-600"
-          />
+          {info ? (
+            <img
+              src={info.thumbnails?.high?.url}
+              alt="Canal"
+              className="w-20 h-20 rounded-full border-2 border-red-600"
+            />
+          ) : (
+            <div className="w-20 h-20 rounded-full bg-neutral-800 animate-pulse" />
+          )}
           <div>
-            <h2 className="text-3xl font-bold text-white">{info.title}</h2>
+            <h2 className="text-3xl font-bold text-white">
+              {info ? info.title : "FulLshoT"}
+            </h2>
             <p className="text-sm text-gray-400 mt-1">
-              {info.stats.subscriberCount} subs • {info.stats.viewCount} views
+              {info
+                ? `${info.stats.subscriberCount} subs • ${info.stats.viewCount} views`
+                : "A carregar..."}
             </p>
             <p
               className={`mt-2 font-semibold ${
@@ -74,7 +75,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* LINKS YOUTUBE / INSTAGRAM */}
         <div className="flex gap-6 mt-6 md:mt-0">
           <a
             href="https://www.youtube.com/@FulLShoT"
@@ -95,44 +95,63 @@ export default function Home() {
         </div>
       </div>
 
-      {/* LIVE OU VÍDEOS */}
-      {live ? (
-        <div className="rounded-xl overflow-hidden shadow-lg border border-red-700">
-          <iframe
-            className="w-full aspect-video"
-            src={`https://www.youtube.com/embed/live_stream?channel=${info.id}`}
-            title="Live"
-            frameBorder="0"
-            allowFullScreen
-          ></iframe>
-        </div>
-      ) : (
+      {/* CONTEÚDO */}
+      {error && (
+        <p className="text-red-500 text-center mt-10">
+          Erro: {error} — tenta novamente mais tarde.
+        </p>
+      )}
+
+      {!error && (
         <>
-          <h3 className="text-2xl font-bold mb-4 text-white">
-            Últimos Vídeos
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {videos.map((v) => (
-              <a
-                key={v.id}
-                href={`https://www.youtube.com/watch?v=${v.id}`}
-                target="_blank"
-                rel="noreferrer"
-                className="card group"
-              >
-                <div className="overflow-hidden rounded-lg">
-                  <img
-                    src={v.thumbnail}
-                    alt={v.title}
-                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-                <p className="mt-2 font-semibold text-white group-hover:text-red-500 transition-colors">
-                  {v.title}
-                </p>
-              </a>
-            ))}
-          </div>
+          {live && (
+            <div className="rounded-xl overflow-hidden shadow-lg border border-red-700 mb-8">
+              <iframe
+                className="w-full aspect-video"
+                src={`https://www.youtube.com/embed/live_stream?channel=${info?.id}`}
+                title="Live"
+                frameBorder="0"
+                allowFullScreen
+              ></iframe>
+            </div>
+          )}
+
+          {!live && (
+            <>
+              <h3 className="text-2xl font-bold mb-4 text-white">
+                Últimos Vídeos
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {videos.length > 0
+                  ? videos.map((v) => (
+                      <a
+                        key={v.id}
+                        href={`https://www.youtube.com/watch?v=${v.id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="card group"
+                      >
+                        <div className="overflow-hidden rounded-lg">
+                          <img
+                            src={v.thumbnail}
+                            alt={v.title}
+                            className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                        <p className="mt-2 font-semibold text-white group-hover:text-red-500 transition-colors">
+                          {v.title}
+                        </p>
+                      </a>
+                    ))
+                  : [1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        className="card h-60 animate-pulse bg-neutral-900 border border-neutral-800"
+                      />
+                    ))}
+              </div>
+            </>
+          )}
         </>
       )}
 
