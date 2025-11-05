@@ -2,9 +2,12 @@ import React from "react";
 
 export default function Circuitos() {
   return (
-    <div className="text-center mt-20">
-      <h1 className="text-3xl font-semibold text-red-500 mb-4">Circuitos</h1>
-      <p className="text-gray-400">Mapa e detalhes dos circuitos usados nas tuas corridas.</p>
-    </div>
+    <section className="pt-28 max-w-7xl mx-auto text-center">
+      <h2 className="text-4xl font-bold text-red-600 mb-6">Circuitos</h2>
+      <p className="text-gray-400">
+        Nesta secção vais poder explorar os circuitos em que competes,
+        incluindo setups e notas de pilotagem. (Em breve)
+      </p>
+    </section>
   );
 }
