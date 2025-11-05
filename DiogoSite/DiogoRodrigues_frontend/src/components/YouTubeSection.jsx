@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from "react"
-import { FaYoutube, FaInstagram, FaUser, FaEye } from "react-icons/fa"
+import React, { useEffect, useState } from "react";
+import { FaYoutube, FaInstagram } from "react-icons/fa";
 
-export default function YouTubeSection() {
-  const [info, setInfo] = useState(null)
-  const [videos, setVideos] = useState([])
-  const [live, setLive] = useState(false)
-  const [error, setError] = useState(null)
+export default function YoutubeSection() {
+  const [info, setInfo] = useState(null);
+  const [live, setLive] = useState(false);
+  const [videos, setVideos] = useState([]);
+  const [error, setError] = useState(null);
 
-  const API_BASE = "https://diogorodrigues-backend.onrender.com/api"
+  const API_BASE = import.meta.env.VITE_API_BASE || "/api";
 
   useEffect(() => {
     const load = async () => {
@@ -16,119 +16,93 @@ export default function YouTubeSection() {
           fetch(`${API_BASE}/youtube/channel-info`),
           fetch(`${API_BASE}/youtube/live-status`),
           fetch(`${API_BASE}/youtube/latest-videos?limit=3`)
-        ])
+        ]);
 
         if (!infoRes.ok || !liveRes.ok || !videosRes.ok)
-          throw new Error("Erro ao carregar dados")
+          throw new Error("Erro ao carregar dados");
 
-        const infoData = await infoRes.json()
-        const liveData = await liveRes.json()
-        const videosData = await videosRes.json()
+        const infoData = await infoRes.json();
+        const liveData = await liveRes.json();
+        const videosData = await videosRes.json();
 
-        setInfo(infoData)
-        setLive(liveData.is_live)
-        setVideos(videosData.videos || [])
+        setInfo(infoData);
+        setLive(liveData.is_live);
+        setVideos(videosData.videos || []);
       } catch (e) {
-        setError(e.message)
+        setError(e.message);
       }
-    }
+    };
 
-    load()
-  }, [])
+    load();
+  }, []);
 
-  if (error) return <p>Erro: {error}</p>
-  if (!info) return <p className="text-center mt-10">A carregar dados do YouTube...</p>
+  if (error) return <p className="text-red-500 text-center mt-10">Erro: {error}</p>;
+  if (!info) return <p className="text-center mt-10">A carregar dados do YouTube...</p>;
 
   return (
-    <section className="max-w-6xl mx-auto mt-10">
-      {/* BARRA DO CANAL */}
-      <div className="relative flex justify-between items-center bg-black/60 border border-red-900 rounded-xl p-4 mb-8 shadow-lg">
-        {/* Esquerda: Logo + Nome + Stats */}
+    <section className="max-w-6xl mx-auto mt-32 text-center">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
         <div className="flex items-center gap-4">
           <img
-            src={info.thumbnail}
-            alt="Logo"
-            className="w-14 h-14 rounded-full border-2 border-red-700"
+            src={info.thumbnails?.high?.url}
+            alt={info.title}
+            className="w-24 h-24 rounded-full border-2 border-red-600"
           />
-          <div>
-            <h2 className="text-xl font-bold text-red-500">{info.title}</h2>
-            <div className="flex gap-4 text-sm text-gray-300 mt-1">
-              <span className="flex items-center gap-1">
-                <FaUser /> {info.subscriberCount} subscritores
-              </span>
-              <span className="flex items-center gap-1">
-                <FaEye /> {info.viewCount} visualizações
-              </span>
-            </div>
+          <div className="text-left">
+            <h2 className="text-2xl font-bold">{info.title}</h2>
+            <p className="text-gray-400 text-sm">
+              {info.stats?.subscriberCount} subs • {info.stats?.viewCount} views
+            </p>
+            <p
+              className={`mt-1 font-semibold ${
+                live ? "text-green-500" : "text-gray-400"
+              }`}
+            >
+              {live ? "🟢 Online" : "⚪ Offline"}
+            </p>
           </div>
         </div>
 
-        {/* Direita: Botões */}
-        <div className="flex items-center gap-3">
+        <div className="flex gap-4">
           <a
             href="https://www.youtube.com/@FulLshoT"
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg font-semibold transition"
+            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-white font-semibold transition-transform hover:scale-105"
           >
-            <FaYoutube /> Ver Canal
+            <FaYoutube className="text-xl" /> YouTube
           </a>
           <a
             href="https://www.instagram.com/diofdx"
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-2 bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 px-3 py-2 rounded-lg text-white font-semibold hover:opacity-90 transition"
+            className="flex items-center gap-2 bg-gradient-to-r from-pink-600 to-purple-600 hover:opacity-90 px-4 py-2 rounded-lg text-white font-semibold transition-transform hover:scale-105"
           >
-            <FaInstagram /> Instagram
+            <FaInstagram className="text-xl" /> Instagram
           </a>
-        </div>
-
-        {/* Live Status por cima */}
-        <div className="absolute -top-3 left-6 text-sm font-bold">
-          <span
-            className={`px-3 py-1 rounded ${
-              live ? "bg-green-600 text-white" : "bg-gray-600 text-white"
-            }`}
-          >
-            {live ? "🟢 Online" : "⚫ Offline"}
-          </span>
         </div>
       </div>
 
-      {/* SEÇÃO DE VÍDEOS OU LIVE */}
-      {live ? (
-        <div className="aspect-video mb-10">
-          <iframe
-            className="w-full h-full rounded-lg border-2 border-red-700"
-            src={`https://www.youtube.com/embed/live_stream?channel=${info.channelId}`}
-            title="YouTube Live"
-            frameBorder="0"
-            allowFullScreen
-          ></iframe>
-        </div>
-      ) : (
-        <div>
-          <h3 className="text-2xl mb-4 font-bold text-white">
-            <span className="text-red-500">▶</span> Últimos Vídeos
-          </h3>
-          <div className="grid md:grid-cols-3 gap-6">
-            {videos.map(v => (
-              <a
-                key={v.id}
-                href={`https://www.youtube.com/watch?v=${v.id}`}
-                target="_blank"
-                rel="noreferrer"
-                className="bg-black/70 rounded-lg overflow-hidden shadow-md hover:shadow-red-600/50 hover:scale-105 border border-transparent hover:border-red-600 transition-all"
-              >
-                <img src={v.thumbnail} alt={v.title} className="w-full" />
-                <div className="p-3">
-                  <p className="font-semibold text-white">{v.title}</p>
-                </div>
-              </a>
-            ))}
-          </div>
+      <h3 className="text-xl text-red-600 font-bold mb-6 uppercase tracking-wide">
+        {live ? "🔴 Live Agora" : "🎬 Últimos Vídeos"}
+      </h3>
+
+      {!live && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {videos.map((v) => (
+            <a
+              key={v.id}
+              href={`https://www.youtube.com/watch?v=${v.id}`}
+              target="_blank"
+              rel="noreferrer"
+              className="bg-neutral-900 border border-neutral-800 hover:border-red-600 hover:scale-105 transition-all rounded-xl overflow-hidden"
+            >
+              <img src={v.thumbnail} alt={v.title} className="w-full" />
+              <p className="p-3 text-left text-sm font-semibold">{v.title}</p>
+            </a>
+          ))}
         </div>
       )}
     </section>
-  )
+  );
 }
