@@ -7,8 +7,8 @@ export default function Home() {
   return (
     <div className="space-y-16">
       <YoutubeSection />
-      <StatsSection />
-      <RacesSection />
+     {/* <StatsSection /> */}
+      {/* <RacesSection /> */}
     </div>
   );
 }
