@@ -7,37 +7,39 @@ export default function YoutubeSection() {
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const resInfo = await fetch(
-          "https://diogorodrigues-backend.onrender.com/api/youtube/channel-info"
-        );
-        const info = await resInfo.json();
+  async function fetchData() {
+    try {
+      const [resInfo, resVideos] = await Promise.all([
+        fetch("https://diogorodrigues-backend.onrender.com/api/youtube/channel-info"),
+        fetch("https://diogorodrigues-backend.onrender.com/api/youtube/latest-videos"),
+      ]);
 
-        const resVideos = await fetch(
-          "https://diogorodrigues-backend.onrender.com/api/youtube/latest-videos"
-        );
-        const videosData = await resVideos.json();
-
-        setData({
-          title: info?.title || info?.thumbnails?.title || "Canal",
-          subs: info?.stats?.subscriberCount || 0,
-          views: info?.stats?.viewCount || 0,
-          thumb:
-            info?.thumbnails?.high?.url ||
-            info?.thumbnails?.medium?.url ||
-            info?.thumbnails?.default?.url ||
-            "",
-          banner: info?.banner?.bannerExternalUrl || "",
-          videos: videosData?.videos || [],
-        });
-      } catch (err) {
-        console.error("Erro ao carregar dados:", err);
-        setError("Falha ao carregar dados do YouTube");
+      if (!resInfo.ok || !resVideos.ok) {
+        throw new Error("Falha ao buscar dados do YouTube");
       }
+
+      const info = await resInfo.json().catch(() => ({}));
+      const videosData = await resVideos.json().catch(() => ({}));
+
+      setData({
+        title: info?.title || info?.thumbnails?.title || "Canal",
+        subs: info?.stats?.subscriberCount || 0,
+        views: info?.stats?.viewCount || 0,
+        thumb:
+          info?.thumbnails?.high?.url ||
+          info?.thumbnails?.medium?.url ||
+          info?.thumbnails?.default?.url ||
+          "",
+        banner: info?.banner?.bannerExternalUrl || "",
+        videos: videosData?.videos || [],
+      });
+    } catch (err) {
+      console.error("Erro ao carregar dados:", err);
+      setError("Falha ao carregar dados do YouTube");
     }
-    fetchData();
-  }, []);
+  }
+  fetchData();
+}, []);
 
   if (error)
     return (
