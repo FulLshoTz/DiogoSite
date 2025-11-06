@@ -13,11 +13,7 @@ export default function Header() {
     <header className="fixed top-0 left-0 w-full bg-black/20 backdrop-blur-md border-b border-red-700/50 z-50">
       <div className="flex items-center justify-between max-w-7xl mx-auto px-8 py-4">
         <div className="flex items-center gap-3">
-          <img
-            src="https://diogorodrigues-frontend.onrender.com/assets/logo-DdUCgk7j.png"
-            alt="Logo"
-            className="w-8 h-8"
-          />
+          <img src="/logo.png" alt="Logo" />
           <h1 className="font-bold text-lg text-white">Diogo Rodrigues</h1>
         </div>
         <nav className="flex gap-8">
