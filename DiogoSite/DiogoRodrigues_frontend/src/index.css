@@ -2,25 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ===== Fundo de fibra de carbono animado ===== */
+/* === Fundo animado estilo fibra de carbono === */
 html, body, #root {
   height: 100%;
-  width: 100%;
   margin: 0;
   padding: 0;
+  background-color: black;
+  color: white;
+  font-family: 'Inter', sans-serif;
+  position: relative;
+  overflow-x: hidden;
 }
 
-body {
-  font-family: 'Inter', sans-serif;
-  color: white;
-  background-color: #000 !important; /* fundo preto como base */
-  
+/* camada fixa que anima o fundo */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
   background-image:
-    repeating-linear-gradient(45deg, #1a1a1a 0px, #1a1a1a 2px, #0b0b0b 2px, #0b0b0b 4px),
-    repeating-linear-gradient(-45deg, #1a1a1a 0px, #1a1a1a 2px, #0b0b0b 2px, #0b0b0b 4px),
-    radial-gradient(circle at 30% 30%, rgba(255,0,0,0.15), rgba(0,0,0,0.9) 80%);
+    repeating-linear-gradient(45deg, #1b1b1b 0, #1b1b1b 2px, #0b0b0b 2px, #0b0b0b 4px),
+    repeating-linear-gradient(-45deg, #1b1b1b 0, #1b1b1b 2px, #0b0b0b 2px, #0b0b0b 4px),
+    radial-gradient(circle at 30% 30%, rgba(255, 0, 0, 0.15), rgba(0, 0, 0, 0.9) 80%);
   background-size: 12px 12px, 12px 12px, 100% 100%;
-  background-attachment: fixed;
   background-blend-mode: overlay;
   animation: carbonShift 12s linear infinite;
 }
@@ -31,29 +38,14 @@ body {
   100% { background-position: 0 0, 0 0, 0 0; }
 }
 
-/* Permitir visibilidade do padrão por baixo de elementos */
-#root, main, section, header, footer {
-  background-color: transparent !important;
-}
-
-[class*="bg-black/"], .bg-black {
-  background-color: rgba(0,0,0,0.60) !important;
-  backdrop-filter: blur(2px);
-}
-
-/* Ajustes para bg-neutral escuras */
-[class*="bg-neutral-900"], .bg-neutral-900 {
-  background-color: rgba(17,17,17,0.75) !important;
-}
-
-[class*="bg-neutral-950"], .bg-neutral-950 {
-  background-color: rgba(10,10,10,0.75) !important;
-}
-
-/* Links transição */
-a {
-  transition: color 0.2s, transform 0.2s;
-}
-a:hover {
-  transform: scale(1.05);
+/* Transparência dos blocos */
+[class*="bg-black"],
+[class*="bg-neutral-900"],
+[class*="bg-neutral-950"],
+header,
+footer,
+main,
+section {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+  backdrop-filter: blur(3px);
 }
