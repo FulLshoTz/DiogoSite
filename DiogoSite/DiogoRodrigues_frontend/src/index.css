@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* === Fundo de fibra de carbono animado === */
+/* ======== FUNDO DE FIBRA DE CARBONO ======== */
 html, body, #root {
   height: 100%;
   margin: 0;
@@ -10,19 +10,15 @@ html, body, #root {
 }
 
 body {
-  background-color: #000;
-  color: white;
   font-family: 'Inter', sans-serif;
-
-  /* Padrão em diagonal com animação */
-  background-image:
-    repeating-linear-gradient(45deg, #1b1b1b 0px, #1b1b1b 2px, #0b0b0b 2px, #0b0b0b 4px),
-    repeating-linear-gradient(-45deg, #1b1b1b 0px, #1b1b1b 2px, #0b0b0b 2px, #0b0b0b 4px),
-    radial-gradient(circle at 30% 30%, rgba(255, 0, 0, 0.15), rgba(0, 0, 0, 0.9) 80%);
+  color: white;
+  background: radial-gradient(circle at 20% 20%, rgba(255, 0, 0, 0.1), transparent 60%),
+              repeating-linear-gradient(45deg, #1a1a1a 0, #1a1a1a 2px, #0b0b0b 2px, #0b0b0b 4px),
+              repeating-linear-gradient(-45deg, #1a1a1a 0, #1a1a1a 2px, #0b0b0b 2px, #0b0b0b 4px);
   background-size: 12px 12px, 12px 12px, 100% 100%;
-  background-blend-mode: overlay;
   background-attachment: fixed;
-  animation: carbonShift 12s linear infinite;
+  background-blend-mode: overlay;
+  animation: carbonShift 10s linear infinite;
 }
 
 @keyframes carbonShift {
@@ -31,24 +27,23 @@ body {
   100% { background-position: 0 0, 0 0, 0 0; }
 }
 
-/* === Corrigir opacidade das camadas por cima do fundo === */
-#root,
-main,
-section,
-div.bg-black,
-div.bg-neutral-900,
-div.bg-neutral-950 {
-  background-color: transparent !important;
+/* Permitir ver o fundo através das secções React */
+#root, main, section, header, footer {
+  background: transparent !important;
 }
 
-/* Forçar transparência também nas classes Tailwind com barra (ex: bg-black/90) */
-[class*="bg-black/"],
-[class*="bg-neutral-900/"],
-[class*="bg-neutral-950/"] {
-  background-color: transparent !important;
+/* Tornar "bg-black" e variantes semi-transparentes */
+[class*="bg-black"] {
+  background-color: rgba(0, 0, 0, 0.65) !important;
+  backdrop-filter: blur(3px);
 }
 
-/* Links animados */
+[class*="bg-neutral-900"],
+[class*="bg-neutral-950"] {
+  background-color: rgba(10, 10, 10, 0.7) !important;
+}
+
+/* Links e hover */
 a {
   transition: color 0.2s, transform 0.2s;
 }
