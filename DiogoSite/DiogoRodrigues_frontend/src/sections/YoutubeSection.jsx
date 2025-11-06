@@ -1,70 +1,34 @@
 import React, { useEffect, useState } from "react";
 import { FaYoutube, FaInstagram } from "react-icons/fa";
-import { getChannelInfo, getLatestVideos } from "../api/youtube";
 
 export default function YoutubeSection() {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
-  const [playing, setPlaying] = useState(null);
 
-  // 🎬 Mostra 3 vídeos de fallback enquanto o backend carrega
-  const fallbackVideos = [
-    {
-      id: "dQw4w9WgXcQ", // substitui pelos teus vídeos
-      title: "Vídeo 1 (placeholder)",
-      thumbnail: "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
-    },
-    {
-      id: "M7lc1UVf-VE",
-      title: "Vídeo 2 (placeholder)",
-      thumbnail: "https://i.ytimg.com/vi/M7lc1UVf-VE/hqdefault.jpg",
-    },
-    {
-      id: "eY52Zsg-KVI",
-      title: "Vídeo 3 (placeholder)",
-      thumbnail: "https://i.ytimg.com/vi/eY52Zsg-KVI/hqdefault.jpg",
-    },
-  ];
-
-  // Estado inicial com vídeos temporários
-  const [videos, setVideos] = useState(fallbackVideos);
-  const [info, setInfo] = useState({
-    title: "Carregando canal...",
-    subs: 0,
-    views: 0,
-    isLive: false,
-    thumb: "",
-  });
+  // Mostra 3 vídeos reais logo no início (canal FulLshoT)
+  const [videos, setVideos] = useState([
+    { id: "VqHqU7q4mV0", title: "Hotlap #1" },
+    { id: "1v6A2yEIxv4", title: "Hotlap #2" },
+    { id: "x6LB0u6C6Xo", title: "Hotlap #3" },
+  ]);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [infoRes, videosRes] = await Promise.all([
-          getChannelInfo(),
-          getLatestVideos(),
+        const [resInfo, resVideos] = await Promise.all([
+          fetch("https://diogorodrigues-backend.onrender.com/api/youtube/channel-info"),
+          fetch("https://diogorodrigues-backend.onrender.com/api/youtube/latest-videos"),
         ]);
+        const info = await resInfo.json();
+        const list = await resVideos.json();
 
-        if (infoRes) {
-          setInfo({
-            title: infoRes.title || "Canal",
-            subs: infoRes?.stats?.subscriberCount || 0,
-            views: infoRes?.stats?.viewCount || 0,
-            thumb:
-              infoRes?.thumbnails?.high?.url ||
-              infoRes?.thumbnails?.medium?.url ||
-              "",
-            isLive: infoRes?.liveBroadcastContent === "live",
-          });
+        if (list?.videos?.length > 0) {
+          setVideos(list.videos.slice(0, 3));
         }
 
-        if (videosRes?.videos?.length > 0) {
-          const ordered = videosRes.videos
-            .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
-            .slice(0, 3);
-          setVideos(ordered);
-        }
+        setData(info);
       } catch (err) {
-        console.error("Erro ao carregar YouTube:", err);
+        console.error("Erro ao buscar dados:", err);
         setError("Falha ao carregar dados do YouTube");
       }
     }
@@ -79,32 +43,20 @@ export default function YoutubeSection() {
       </section>
     );
 
-  const { title, subs, views, thumb, isLive } = info;
-
   return (
     <section className="max-w-7xl mx-auto text-center text-white px-4">
-      {/* Cabeçalho do canal */}
       <div className="flex flex-col md:flex-row items-center justify-between mb-10">
         <div className="flex items-center gap-4">
-          {thumb && (
-            <img
-              src={thumb}
-              alt={title}
-              className="w-20 h-20 rounded-full border-2 border-red-600"
-            />
-          )}
+          <img
+            src={data?.thumbnails?.high?.url || "https://www.youtube.com/s/desktop/e1f7b6db/img/favicon_144x144.png"}
+            alt="FulLshoT"
+            className="w-20 h-20 rounded-full border-2 border-red-600"
+          />
           <div className="text-left">
-            <h2 className="text-xl font-bold">{title}</h2>
+            <h2 className="text-xl font-bold">{data?.title || "FulLshoT"}</h2>
             <p className="text-gray-400 text-sm">
-              {subs} subs • {views} views
-            </p>
-            <p className="text-gray-400 mt-1 flex items-center gap-2">
-              <span
-                className={`inline-block w-3 h-3 rounded-full ${
-                  isLive ? "bg-red-600 animate-pulse" : "bg-gray-500"
-                }`}
-              ></span>
-              {isLive ? "Ao vivo agora 🔴" : "Offline"}
+              {data?.stats?.subscriberCount || "—"} subs •{" "}
+              {data?.stats?.viewCount || "—"} views
             </p>
           </div>
         </div>
@@ -129,60 +81,30 @@ export default function YoutubeSection() {
         </div>
       </div>
 
-      {/* Live stream ou últimos vídeos */}
-      {isLive ? (
-        <div className="flex justify-center my-10">
-          <iframe
-            src="https://www.youtube.com/embed/live_stream?channel=UCfg5QnFApnh0RXZlZFzvLiQ&autoplay=1&mute=0"
-            title="Live stream"
-            className="w-full max-w-4xl aspect-video rounded-lg border-2 border-red-600"
-            allow="autoplay; encrypted-media"
-            allowFullScreen
-          ></iframe>
-        </div>
-      ) : (
-        <>
-          <h3 className="text-2xl font-bold mb-6 flex items-center justify-center gap-2">
-            📺 Últimos Vídeos
-          </h3>
+      {/* Últimos vídeos (mostra logo placeholders reais do canal) */}
+      <h3 className="text-2xl font-bold mb-6 flex items-center justify-center gap-2">
+        📺 Últimos Vídeos
+      </h3>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {videos.map((v) => (
-              <div
-                key={v.id}
-                className="relative bg-neutral-900 hover:bg-neutral-800 transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-lg border border-red-700/30 cursor-pointer"
-                onClick={() => setPlaying(playing === v.id ? null : v.id)}
-              >
-                {playing === v.id ? (
-                  <iframe
-                    src={`https://www.youtube.com/embed/${v.id}?autoplay=1`}
-                    title={v.title}
-                    className="w-full h-48 object-cover"
-                    allow="autoplay; encrypted-media"
-                    allowFullScreen
-                  ></iframe>
-                ) : (
-                  <>
-                    <img
-                      src={v.thumbnail}
-                      alt={v.title}
-                      className="w-full h-48 object-cover"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="bg-black/60 p-3 rounded-full">
-                        <FaYoutube className="text-4xl text-red-600" />
-                      </div>
-                    </div>
-                  </>
-                )}
-                <div className="p-3 text-left">
-                  <p className="font-semibold">{v.title}</p>
-                </div>
-              </div>
-            ))}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        {videos.map((v) => (
+          <div
+            key={v.id}
+            className="relative bg-neutral-900 hover:bg-neutral-800 transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-lg border border-red-700/30"
+          >
+            <iframe
+              src={`https://www.youtube.com/embed/${v.id}`}
+              title={v.title}
+              className="w-full aspect-video"
+              allow="autoplay; encrypted-media"
+              allowFullScreen
+            ></iframe>
+            <div className="p-3 text-left">
+              <p className="font-semibold">{v.title}</p>
+            </div>
           </div>
-        </>
-      )}
+        ))}
+      </div>
     </section>
   );
 }
