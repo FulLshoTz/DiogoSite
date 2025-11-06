@@ -19,6 +19,7 @@ header,
 main,
 footer,
 section {
-  background-color: rgba(0, 0, 0, 0.65) !important;
-  backdrop-filter: blur(3px);
+  background-color: rgba(0, 0, 0, 0.25) !important;
+  backdrop-filter: blur(2px);
 }
+
