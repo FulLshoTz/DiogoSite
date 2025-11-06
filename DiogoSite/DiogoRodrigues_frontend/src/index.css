@@ -45,6 +45,30 @@ div.bg-neutral-950 {
 a {
   transition: color 0.2s, transform 0.2s;
 }
+/* Garantir que html/body ocupam e permitem camada de fundo */
+html, body, #root { min-height: 100%; }
+body { position: relative; }
+
+/* Tornar opacos Tailwind "bg-*" compatíveis com o fundo */
+[class*="bg-black/"] {
+  /* força as variantes bg-black/xx a serem ~60% visíveis */
+  background-color: rgba(0, 0, 0, 0.60) !important;
+  backdrop-filter: blur(2px);
+}
+
+.bg-black { /* fallback quando alguém usar bg-black "puro" */
+  background-color: rgba(0, 0, 0, 0.60) !important;
+  backdrop-filter: blur(2px);
+}
+
+/* Também neutral-900/950 que aparecem nos cards */
+[class*="bg-neutral-900"], .bg-neutral-900 {
+  background-color: rgba(17, 17, 17, 0.75) !important;
+}
+[class*="bg-neutral-950"], .bg-neutral-950 {
+  background-color: rgba(10, 10, 10, 0.75) !important;
+}
+
 
 a:hover {
   transform: scale(1.05);
