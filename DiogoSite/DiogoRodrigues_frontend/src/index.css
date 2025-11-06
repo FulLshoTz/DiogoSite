@@ -1,78 +1,16 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* ===== Configuração global ===== */
-html, body, #root {
-  height: 100%;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  font-family: 'Inter', sans-serif;
-  background: transparent !important; /* deixa ver o fundo animado */
-  color: white;
-  overflow-x: hidden;
-}
-
-/* ===== Estilo base para texto e links ===== */
-a {
-  text-decoration: none;
-  color: inherit;
-}
-
-a:hover {
-  color: #f87171; /* vermelho suave ao hover */
-}
-
-/* ===== Secções e áreas principais ===== */
+/* === Corrigir opacidade dos containers === */
 header,
 main,
 footer,
-section {
-  background-color: rgba(0, 0, 0, 0.25) !important; /* ligeiro escurecimento */
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
-  transition: background-color 0.3s ease;
-}
-
-/* ===== Ajustes visuais globais ===== */
-[class*="bg-black"],
-[class*="bg-neutral-900"],
-[class*="bg-neutral-950"] {
+section,
+div[class*="bg-black"],
+div[class*="bg-neutral"] {
   background-color: rgba(0, 0, 0, 0.25) !important;
+  backdrop-filter: blur(2px);
 }
 
-/* ===== Scrollbar personalizada (dark mode) ===== */
-::-webkit-scrollbar {
-  width: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(20, 20, 20, 0.6);
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(200, 0, 0, 0.6);
-  border-radius: 5px;
-}
-/* === TESTE: forçar visibilidade do canvas === */
+/* === Garantir que o canvas fica sempre por trás === */
 #carbon-bg {
-  background: repeating-linear-gradient(
-    45deg,
-    #222 0,
-    #222 10px,
-    #000 10px,
-    #000 20px
-  ) !important;
   z-index: -1 !important;
-  position: fixed !important;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-}
-
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 0, 0, 0.8);
+  opacity: 1 !important;
 }
