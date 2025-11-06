@@ -2,12 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Corpo com textura tipo carbono */
 body {
   background-color: #000 !important;
-  color: white;
+  color: #fff;
   font-family: 'Inter', sans-serif;
 
-  /* Textura visível tipo carbono */
   background-image:
     repeating-linear-gradient(45deg, #111 0px, #111 2px, #000 2px, #000 4px),
     repeating-linear-gradient(-45deg, #111 0px, #111 2px, #000 2px, #000 4px),
@@ -16,38 +16,37 @@ body {
   background-blend-mode: overlay;
   background-attachment: fixed;
 
-  animation: carbonMove 10s linear infinite;
+  animation: carbonMove 8s linear infinite;
 }
 
+/* Movimento suave do padrão */
 @keyframes carbonMove {
   0% {
     background-position: 0 0, 0 0, 0 0;
   }
   50% {
-    background-position: 10px 10px, -10px -10px, 0 0;
+    background-position: 8px 8px, -8px -8px, 0 0;
   }
   100% {
     background-position: 0 0, 0 0, 0 0;
   }
 }
 
-/* Animação do brilho */
-@keyframes carbonShine {
-  0% {
-    background-position: 0 0, 4px 4px, 0% 50%;
-  }
-  50% {
-    background-position: 0 0, 4px 4px, 100% 50%;
-  }
-  100% {
-    background-position: 0 0, 4px 4px, 0% 50%;
-  }
-}
-
+/* Links com efeito */
 a {
   transition: color 0.2s, transform 0.2s;
 }
 
 a:hover {
   transform: scale(1.05);
+}
+
+/* Sobrescreve preto sólido das secções para permitir ver o padrão */
+section,
+main,
+div.bg-black,
+div.bg-neutral-900,
+div.bg-neutral-950 {
+  background-color: rgba(0, 0, 0, 0.75) !important; /* transparência */
+  backdrop-filter: blur(2px);
 }
