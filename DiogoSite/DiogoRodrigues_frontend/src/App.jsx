@@ -29,7 +29,7 @@ function App() {
 
       {/* Estrutura principal do site */}
       <Router>
-        <div className="flex min-h-screen bg-black text-white">
+        <div className="flex min-h-screen text-white">
           <Sidebar />
           <div className="flex-1 flex flex-col">
             <Header />
