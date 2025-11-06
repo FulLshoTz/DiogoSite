@@ -1,31 +1,26 @@
 // src/api/youtube.js
 
-const API_BASE_URL = "https://diogorodrigues-backend.onrender.com/api/youtube";
+// Usa a variável do Render se existir, ou local em desenvolvimento
+const API_BASE_URL = import.meta.env.VITE_API_BASE ?? "http://localhost:5001/api";
 
-/**
- * Vai buscar as informações do canal (nome, subscritores, visualizações, etc.)
- */
-export const fetchChannelInfo = async () => {
+export const getChannelInfo = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/channel-info`);
-    if (!response.ok) throw new Error("Erro ao obter info do canal");
+    const response = await fetch(`${API_BASE_URL}/youtube/channel-info`);
+    if (!response.ok) throw new Error("Erro ao obter informações do canal");
     return await response.json();
   } catch (error) {
-    console.error("Erro em fetchChannelInfo:", error);
+    console.error("Erro em getChannelInfo:", error);
     return null;
   }
 };
 
-/**
- * Vai buscar os últimos vídeos do canal
- */
-export const fetchLatestVideos = async () => {
+export const getLatestVideos = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/latest-videos`);
+    const response = await fetch(`${API_BASE_URL}/youtube/latest-videos`);
     if (!response.ok) throw new Error("Erro ao obter vídeos");
     return await response.json();
   } catch (error) {
-    console.error("Erro em fetchLatestVideos:", error);
+    console.error("Erro em getLatestVideos:", error);
     return [];
   }
 };
