@@ -6,11 +6,11 @@ import Circuitos from "./pages/Circuitos";
 import Definicoes from "./pages/Definicoes";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
-import Background from "./components/Background";
+import { startCarbonBackground } from "./utils/carbonBackground";
 
 function App() {
-  // 🔁 Mantém o backend acordado
   useEffect(() => {
+    // 🔁 Mantém o backend acordado
     const ping = () => {
       fetch("https://diogorodrigues-backend.onrender.com/")
         .then(() => console.log("Ping backend ok"))
@@ -19,25 +19,22 @@ function App() {
 
     ping();
     const interval = setInterval(ping, 30000);
+
+    // 🎨 Inicia o fundo animado
+    startCarbonBackground();
+
     return () => clearInterval(interval);
   }, []);
 
   return (
     <>
-      <Background />
-
+      {/* Estrutura principal do site */}
       <Router>
-        <div
-          className="flex min-h-screen text-white"
-          style={{ background: "blue" }} // 🔵 TESTE 2 - cor do container principal
-        >
+        <div className="flex min-h-screen text-white">
           <Sidebar />
           <div className="flex-1 flex flex-col">
             <Header />
-            <main
-              className="flex-1 pt-20"
-              style={{ background: "green" }} // 🟢 TESTE 3 - cor do main
-            >
+            <main className="flex-1 pt-20">
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/corridas" element={<Corridas />} />
