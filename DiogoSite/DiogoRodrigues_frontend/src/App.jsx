@@ -8,7 +8,6 @@ import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import Background from "./components/Background";
 
-
 function App() {
   // 🔁 Ping automático para manter backend acordado
   useEffect(() => {
@@ -18,34 +17,34 @@ function App() {
         .catch(() => console.log("Backend ainda a acordar..."));
     };
 
-    // Faz o ping logo no arranque
-    ping();
-
-    // Repete a cada 30 segundos enquanto o site estiver aberto
+    ping(); // logo ao abrir o site
     const interval = setInterval(ping, 30000);
-
-    // Limpa o intervalo quando o utilizador sair do site
     return () => clearInterval(interval);
   }, []);
 
   return (
-     <Background />     {/* Fundo de carbono animado */}
-    <Router>
-      <div className="flex min-h-screen bg-black text-white">
-        <Sidebar />
-        <div className="flex-1 flex flex-col">
-          <Header />
-          <main className="flex-1 pt-20">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/corridas" element={<Corridas />} />
-              <Route path="/circuitos" element={<Circuitos />} />
-              <Route path="/definicoes" element={<Definicoes />} />
-            </Routes>
-          </main>
+    <>
+      {/* Fundo animado de fibra de carbono */}
+      <Background />
+
+      {/* Estrutura principal do site */}
+      <Router>
+        <div className="flex min-h-screen bg-black text-white">
+          <Sidebar />
+          <div className="flex-1 flex flex-col">
+            <Header />
+            <main className="flex-1 pt-20">
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/corridas" element={<Corridas />} />
+                <Route path="/circuitos" element={<Circuitos />} />
+                <Route path="/definicoes" element={<Definicoes />} />
+              </Routes>
+            </main>
+          </div>
         </div>
-      </div>
-    </Router>
+      </Router>
+    </>
   );
 }
 
