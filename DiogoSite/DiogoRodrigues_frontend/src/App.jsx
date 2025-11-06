@@ -29,6 +29,7 @@ function App() {
   }, []);
 
   return (
+     <Background />     {/* Fundo de carbono animado */}
     <Router>
       <div className="flex min-h-screen bg-black text-white">
         <Sidebar />
