@@ -2,53 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Corpo com textura tipo carbono */
+/* 🔧 Fundo com padrão carbono bem visível e animação lenta */
 body {
   background-color: #000 !important;
   color: white;
   font-family: 'Inter', sans-serif;
 
-  /* Textura carbono mais visível */
+  /* Padrão em diagonal */
   background-image:
-    repeating-linear-gradient(45deg, #1a1a1a 0px, #1a1a1a 2px, #000 2px, #000 4px),
-    repeating-linear-gradient(-45deg, #1a1a1a 0px, #1a1a1a 2px, #000 2px, #000 4px),
-    radial-gradient(circle at 50% 50%, rgba(255, 0, 0, 0.15), rgba(0, 0, 0, 0.85) 70%);
-  background-size: 10px 10px, 10px 10px, 100% 100%;
+    repeating-linear-gradient(45deg, #1b1b1b 0px, #1b1b1b 2px, #0b0b0b 2px, #0b0b0b 4px),
+    repeating-linear-gradient(-45deg, #1b1b1b 0px, #1b1b1b 2px, #0b0b0b 2px, #0b0b0b 4px),
+    radial-gradient(circle at 30% 30%, rgba(255, 0, 0, 0.15), rgba(0, 0, 0, 0.9) 80%);
+  background-size: 12px 12px, 12px 12px, 100% 100%;
   background-blend-mode: overlay;
   background-attachment: fixed;
-
-  animation: carbonMove 6s linear infinite;
+  animation: carbonShift 12s linear infinite;
 }
 
-
-/* Movimento suave do padrão */
-@keyframes carbonMove {
+/* Movimento lento tipo reflexo */
+@keyframes carbonShift {
   0% {
     background-position: 0 0, 0 0, 0 0;
   }
   50% {
-    background-position: 8px 8px, -8px -8px, 0 0;
+    background-position: 12px 12px, -12px -12px, 0 0;
   }
   100% {
     background-position: 0 0, 0 0, 0 0;
   }
 }
 
-/* Links com efeito */
+/* 🔧 Transparência leve para deixar o padrão aparecer */
+section,
+main,
+div.bg-black,
+div.bg-neutral-900,
+div.bg-neutral-950 {
+  background-color: rgba(0, 0, 0, 0.85) !important;
+  backdrop-filter: blur(2px);
+}
+
 a {
   transition: color 0.2s, transform 0.2s;
 }
 
 a:hover {
   transform: scale(1.05);
-}
-
-/* Sobrescreve preto sólido das secções para permitir ver o padrão */
-section,
-main,
-div.bg-black,
-div.bg-neutral-900,
-div.bg-neutral-950 {
-  background-color: rgba(0, 0, 0, 0.75) !important; /* transparência */
-  backdrop-filter: blur(2px);
 }
