@@ -1,33 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { FaYoutube, FaInstagram } from "react-icons/fa";
+import { getChannelInfo, getLatestVideos } from "../api/youtube";
 
 export default function YoutubeSection() {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
-  const [playing, setPlaying] = useState(null); // guarda o ID do vídeo a tocar
+  const [playing, setPlaying] = useState(null);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [resInfo, resVideos] = await Promise.all([
-          fetch("https://diogorodrigues-backend.onrender.com/api/youtube/channel-info"),
-          fetch("https://diogorodrigues-backend.onrender.com/api/youtube/latest-videos"),
+        const [info, videosData] = await Promise.all([
+          getChannelInfo(),
+          getLatestVideos(),
         ]);
 
-        if (!resInfo.ok || !resVideos.ok) {
-          throw new Error("Falha ao buscar dados do YouTube");
-        }
-
-        const info = await resInfo.json();
-        const videosData = await resVideos.json();
-
-        // Ordenar vídeos por data e limitar a 3
         const orderedVideos = (videosData?.videos || [])
           .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
           .slice(0, 3);
-
-        // Verificar se o canal está em direto
-        const isLive = info?.liveBroadcastContent === "live";
 
         setData({
           title: info?.title || "Canal",
@@ -38,7 +28,7 @@ export default function YoutubeSection() {
             info?.thumbnails?.medium?.url ||
             info?.thumbnails?.default?.url ||
             "",
-          isLive,
+          isLive: info?.liveBroadcastContent === "live",
           videos: orderedVideos,
         });
       } catch (err) {
