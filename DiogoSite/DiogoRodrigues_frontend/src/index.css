@@ -6,10 +6,33 @@ body {
   background-color: #0a0a0a;
   color: white;
   font-family: 'Inter', sans-serif;
-  background-image: radial-gradient(#111 1px, transparent 1px);
-  background-size: 20px 20px;
+
+  /* Padrão de fibra de carbono */
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.04) 1px, transparent 0),
+    radial-gradient(circle at 3px 3px, rgba(255, 255, 255, 0.03) 1px, transparent 0),
+    linear-gradient(135deg, rgba(255, 0, 0, 0.04), rgba(0, 0, 0, 0.05));
+  background-size: 8px 8px, 8px 8px, 200% 200%;
+  background-attachment: fixed;
+
+  /* Animação do brilho */
+  animation: carbonShine 18s ease-in-out infinite;
 }
 
+/* Animação subtil que simula luz a refletir no carbono */
+@keyframes carbonShine {
+  0% {
+    background-position: 0 0, 4px 4px, 0% 50%;
+  }
+  50% {
+    background-position: 0 0, 4px 4px, 100% 50%;
+  }
+  100% {
+    background-position: 0 0, 4px 4px, 0% 50%;
+  }
+}
+
+/* Links com transição */
 a {
   transition: color 0.2s, transform 0.2s;
 }
