@@ -2,18 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 🔧 Fundo com padrão carbono bem visível e animação lenta */
+/* === Fundo de fibra de carbono animado === */
 html, body, #root {
-  min-height: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  position: relative;
-  background-color: #000 !important;
+  background-color: #000;
   color: white;
   font-family: 'Inter', sans-serif;
 
-  /* Padrão em diagonal */
+  /* Padrão em diagonal com animação */
   background-image:
     repeating-linear-gradient(45deg, #1b1b1b 0px, #1b1b1b 2px, #0b0b0b 2px, #0b0b0b 4px),
     repeating-linear-gradient(-45deg, #1b1b1b 0px, #1b1b1b 2px, #0b0b0b 2px, #0b0b0b 4px),
@@ -24,36 +25,33 @@ body {
   animation: carbonShift 12s linear infinite;
 }
 
-/* Movimento lento tipo reflexo */
 @keyframes carbonShift {
   0% { background-position: 0 0, 0 0, 0 0; }
   50% { background-position: 12px 12px, -12px -12px, 0 0; }
   100% { background-position: 0 0, 0 0, 0 0; }
 }
 
-/* 🔧 Transparência leve para deixar o padrão aparecer */
-[class*="bg-black/"] {
-  background-color: rgba(0, 0, 0, 0.60) !important;
-  backdrop-filter: blur(2px);
+/* === Corrigir opacidade das camadas por cima do fundo === */
+#root,
+main,
+section,
+div.bg-black,
+div.bg-neutral-900,
+div.bg-neutral-950 {
+  background-color: transparent !important;
 }
 
-.bg-black {
-  background-color: rgba(0, 0, 0, 0.60) !important;
-  backdrop-filter: blur(2px);
+/* Forçar transparência também nas classes Tailwind com barra (ex: bg-black/90) */
+[class*="bg-black/"],
+[class*="bg-neutral-900/"],
+[class*="bg-neutral-950/"] {
+  background-color: transparent !important;
 }
 
-[class*="bg-neutral-900"], .bg-neutral-900 {
-  background-color: rgba(17, 17, 17, 0.75) !important;
-}
-
-[class*="bg-neutral-950"], .bg-neutral-950 {
-  background-color: rgba(10, 10, 10, 0.75) !important;
-}
-
+/* Links animados */
 a {
   transition: color 0.2s, transform 0.2s;
 }
-
 a:hover {
   transform: scale(1.05);
 }
