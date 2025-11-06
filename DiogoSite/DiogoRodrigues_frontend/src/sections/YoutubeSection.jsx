@@ -1,62 +1,67 @@
 import React, { useEffect, useState } from "react";
 import { FaYoutube, FaInstagram } from "react-icons/fa";
 
-// vídeos públicos diretos do canal FulLshoT (sem depender da API)
-const localVideos = [
-  { id: "bK88eTATwz8", title: "EA WRC - Rally Portugal | FulLshoT" },
-  { id: "hW7sBHeHhTg", title: "Le Mans Ultimate - Hotlap GT3 | FulLshoT" },
-  { id: "FJ_Htu_f5Cs", title: "Assetto Corsa - Lexus GT3 | FulLshoT" },
-];
-
 export default function YoutubeSection() {
-  const [videos, setVideos] = useState(localVideos);
-  const [channel, setChannel] = useState({
-    title: "FulLshoT",
-    subs: "—",
-    views: "—",
-    thumb: "https://yt3.googleusercontent.com/ytc/AIf8zZTykE0QzvPZOH3MeDfPZL5K8kUR5LKZ0ikQ2w=s176-c-k-c0x00ffffff-no-rj",
-  });
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+  const [playing, setPlaying] = useState(null);
 
-  // assim que o backend acordar, atualiza a informação
   useEffect(() => {
-    async function updateFromBackend() {
+    async function fetchData() {
       try {
-        const [infoRes, vidsRes] = await Promise.all([
+        const [resInfo, resVideos] = await Promise.all([
           fetch("https://diogorodrigues-backend.onrender.com/api/youtube/channel-info"),
           fetch("https://diogorodrigues-backend.onrender.com/api/youtube/latest-videos"),
         ]);
 
-        if (!infoRes.ok || !vidsRes.ok) return; // se backend ainda estiver a acordar, ignora
-
-        const info = await infoRes.json();
-        const vids = await vidsRes.json();
-
-        if (info?.title) {
-          setChannel({
-            title: info.title,
-            subs: info?.stats?.subscriberCount ?? "—",
-            views: info?.stats?.viewCount ?? "—",
-            thumb:
-              info?.thumbnails?.high?.url ||
-              info?.thumbnails?.default?.url ||
-              channel.thumb,
-          });
+        if (!resInfo.ok || !resVideos.ok) {
+          throw new Error("Erro ao contactar o backend");
         }
 
-        if (vids?.videos?.length > 0) {
-          setVideos(vids.videos.slice(0, 3));
-        }
+        const info = await resInfo.json();
+        const list = await resVideos.json();
+
+        // Ordenar por data (mais recentes primeiro)
+        const sorted = list?.videos
+          ? list.videos.sort(
+              (a, b) => new Date(b.publishedAt) - new Date(a.publishedAt)
+            )
+          : [];
+
+        setData({
+          title: info?.title || "Diogo Rodrigues",
+          subs: info?.stats?.subscriberCount || "—",
+          views: info?.stats?.viewCount || "—",
+          thumb:
+            info?.thumbnails?.high?.url ||
+            info?.thumbnails?.medium?.url ||
+            "https://www.youtube.com/s/desktop/e1f7b6db/img/favicon_144x144.png",
+          videos: sorted.slice(0, 3),
+        });
       } catch (err) {
-        console.log("Backend ainda não está ativo:", err);
+        console.error("Erro ao carregar dados:", err);
+        setError("Falha ao carregar dados do YouTube");
       }
     }
 
-    updateFromBackend();
-
-    // tenta novamente de 30 em 30 segundos (caso o backend acorde)
-    const interval = setInterval(updateFromBackend, 30000);
-    return () => clearInterval(interval);
+    fetchData();
   }, []);
+
+  if (error)
+    return (
+      <section className="text-center py-16 text-red-500 font-semibold">
+        {error}
+      </section>
+    );
+
+  if (!data)
+    return (
+      <section className="text-center py-16 text-gray-400">
+        A carregar dados do YouTube...
+      </section>
+    );
+
+  const { title, subs, views, thumb, videos } = data;
 
   return (
     <section className="max-w-7xl mx-auto text-center text-white px-4 py-16">
@@ -64,14 +69,14 @@ export default function YoutubeSection() {
       <div className="flex flex-col md:flex-row items-center justify-between mb-10">
         <div className="flex items-center gap-4">
           <img
-            src={channel.thumb}
-            alt="Logo canal"
+            src={thumb}
+            alt={title}
             className="w-20 h-20 rounded-full border-2 border-red-600"
           />
           <div className="text-left">
-            <h2 className="text-xl font-bold">{channel.title}</h2>
+            <h2 className="text-xl font-bold">{title}</h2>
             <p className="text-gray-400 text-sm">
-              {channel.subs} subs • {channel.views} views
+              {subs} subs • {views} views
             </p>
           </div>
         </div>
@@ -105,15 +110,31 @@ export default function YoutubeSection() {
         {videos.map((v) => (
           <div
             key={v.id}
-            className="relative bg-neutral-900 hover:bg-neutral-800 transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-lg border border-red-700/30"
+            className="relative bg-neutral-900 hover:bg-neutral-800 transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-lg border border-red-700/30 cursor-pointer"
+            onClick={() => setPlaying(playing === v.id ? null : v.id)}
           >
-            <iframe
-              src={`https://www.youtube.com/embed/${v.id}`}
-              title={v.title}
-              className="w-full aspect-video"
-              allow="autoplay; encrypted-media"
-              allowFullScreen
-            ></iframe>
+            {playing === v.id ? (
+              <iframe
+                src={`https://www.youtube.com/embed/${v.id}?autoplay=1`}
+                title={v.title}
+                className="w-full aspect-video"
+                allow="autoplay; encrypted-media"
+                allowFullScreen
+              ></iframe>
+            ) : (
+              <>
+                <img
+                  src={v.thumbnail}
+                  alt={v.title}
+                  className="w-full aspect-video object-cover"
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="bg-black/60 p-3 rounded-full">
+                    <FaYoutube className="text-4xl text-red-600" />
+                  </div>
+                </div>
+              </>
+            )}
             <div className="p-3 text-left">
               <p className="font-semibold">{v.title}</p>
             </div>
