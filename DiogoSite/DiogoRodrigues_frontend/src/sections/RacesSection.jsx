@@ -29,19 +29,27 @@ export default function RacesSection() {
   ];
 
   return (
-    <section className="max-w-6xl mx-auto text-white">
-      <h3 className="flex items-center gap-2 text-red-500 font-bold text-lg mb-6">
+    <section className="max-w-6xl mx-auto text-white mt-16">
+      <h3 className="flex items-center gap-2 text-red-500 font-bold text-lg mb-6 tracking-wide">
         🏁 Últimas Corridas
       </h3>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {races.map((r, i) => (
-          <div key={i} className="bg-neutral-900 border border-red-900 rounded-xl p-5 hover:border-red-600 hover:scale-105 transition-all">
+          <div
+            key={i}
+            className="bg-neutral-900 border border-red-800 rounded-xl p-5 shadow-md hover:border-red-600 hover:shadow-red-900/20 transition-all duration-300 transform hover:-translate-y-1 hover:scale-105"
+          >
             <p className="text-yellow-500 font-semibold mb-2">{r.pos}</p>
-            <h4 className="font-bold text-lg mb-2">{r.track}</h4>
-            <p className="text-sm text-gray-400">📅 {r.date}</p>
-            <p className="text-sm text-gray-400">🚗 {r.car}</p>
-            <p className="text-sm text-gray-400 mb-2">⏱ Melhor volta: {r.bestLap}</p>
-            <p className="text-sm italic text-gray-300">{r.comment}</p>
+            <h4 className="font-bold text-lg mb-2 text-white/90">{r.track}</h4>
+            <div className="space-y-1 text-sm text-gray-400">
+              <p>📅 {r.date}</p>
+              <p>🚗 {r.car}</p>
+              <p>⏱ Melhor volta: {r.bestLap}</p>
+            </div>
+            <p className="text-sm italic text-gray-300 mt-3 border-t border-neutral-800 pt-2">
+              {r.comment}
+            </p>
           </div>
         ))}
       </div>
