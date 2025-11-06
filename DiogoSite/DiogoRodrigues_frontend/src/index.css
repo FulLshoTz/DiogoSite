@@ -5,19 +5,21 @@
 /* Corpo com textura tipo carbono */
 body {
   background-color: #000 !important;
-  color: #fff;
+  color: white;
   font-family: 'Inter', sans-serif;
 
+  /* Textura carbono mais visível */
   background-image:
-    repeating-linear-gradient(45deg, #111 0px, #111 2px, #000 2px, #000 4px),
-    repeating-linear-gradient(-45deg, #111 0px, #111 2px, #000 2px, #000 4px),
-    radial-gradient(circle at 50% 50%, rgba(255, 0, 0, 0.1), rgba(0, 0, 0, 0.9) 70%);
-  background-size: 8px 8px, 8px 8px, 100% 100%;
+    repeating-linear-gradient(45deg, #1a1a1a 0px, #1a1a1a 2px, #000 2px, #000 4px),
+    repeating-linear-gradient(-45deg, #1a1a1a 0px, #1a1a1a 2px, #000 2px, #000 4px),
+    radial-gradient(circle at 50% 50%, rgba(255, 0, 0, 0.15), rgba(0, 0, 0, 0.85) 70%);
+  background-size: 10px 10px, 10px 10px, 100% 100%;
   background-blend-mode: overlay;
   background-attachment: fixed;
 
-  animation: carbonMove 8s linear infinite;
+  animation: carbonMove 6s linear infinite;
 }
+
 
 /* Movimento suave do padrão */
 @keyframes carbonMove {
