@@ -4,42 +4,51 @@ import { FaYoutube, FaInstagram } from "react-icons/fa";
 export default function YoutubeSection() {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
-  const [selected, setSelected] = useState(null);
+  const [playing, setPlaying] = useState(null); // guarda o ID do vídeo a tocar
 
   useEffect(() => {
-  async function fetchData() {
-    try {
-      const [resInfo, resVideos] = await Promise.all([
-        fetch("https://diogorodrigues-backend.onrender.com/api/youtube/channel-info"),
-        fetch("https://diogorodrigues-backend.onrender.com/api/youtube/latest-videos"),
-      ]);
+    async function fetchData() {
+      try {
+        const [resInfo, resVideos] = await Promise.all([
+          fetch("https://diogorodrigues-backend.onrender.com/api/youtube/channel-info"),
+          fetch("https://diogorodrigues-backend.onrender.com/api/youtube/latest-videos"),
+        ]);
 
-      if (!resInfo.ok || !resVideos.ok) {
-        throw new Error("Falha ao buscar dados do YouTube");
+        if (!resInfo.ok || !resVideos.ok) {
+          throw new Error("Falha ao buscar dados do YouTube");
+        }
+
+        const info = await resInfo.json();
+        const videosData = await resVideos.json();
+
+        // Ordenar vídeos por data e limitar a 3
+        const orderedVideos = (videosData?.videos || [])
+          .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
+          .slice(0, 3);
+
+        // Verificar se o canal está em direto
+        const isLive = info?.liveBroadcastContent === "live";
+
+        setData({
+          title: info?.title || "Canal",
+          subs: info?.stats?.subscriberCount || 0,
+          views: info?.stats?.viewCount || 0,
+          thumb:
+            info?.thumbnails?.high?.url ||
+            info?.thumbnails?.medium?.url ||
+            info?.thumbnails?.default?.url ||
+            "",
+          isLive,
+          videos: orderedVideos,
+        });
+      } catch (err) {
+        console.error("Erro ao carregar dados:", err);
+        setError("Falha ao carregar dados do YouTube");
       }
-
-      const info = await resInfo.json().catch(() => ({}));
-      const videosData = await resVideos.json().catch(() => ({}));
-
-      setData({
-        title: info?.title || info?.thumbnails?.title || "Canal",
-        subs: info?.stats?.subscriberCount || 0,
-        views: info?.stats?.viewCount || 0,
-        thumb:
-          info?.thumbnails?.high?.url ||
-          info?.thumbnails?.medium?.url ||
-          info?.thumbnails?.default?.url ||
-          "",
-        banner: info?.banner?.bannerExternalUrl || "",
-        videos: videosData?.videos || [],
-      });
-    } catch (err) {
-      console.error("Erro ao carregar dados:", err);
-      setError("Falha ao carregar dados do YouTube");
     }
-  }
-  fetchData();
-}, []);
+
+    fetchData();
+  }, []);
 
   if (error)
     return (
@@ -55,7 +64,7 @@ export default function YoutubeSection() {
       </section>
     );
 
-  const { title, subs, views, thumb, videos } = data;
+  const { title, subs, views, thumb, videos, isLive } = data;
 
   return (
     <section className="max-w-7xl mx-auto text-center text-white px-4">
@@ -74,9 +83,13 @@ export default function YoutubeSection() {
             <p className="text-gray-400 text-sm">
               {subs} subs • {views} views
             </p>
-            <p className="text-gray-400 mt-1">
-              <span className="inline-block w-3 h-3 rounded-full bg-gray-500 mr-2"></span>
-              Offline
+            <p className="text-gray-400 mt-1 flex items-center gap-2">
+              <span
+                className={`inline-block w-3 h-3 rounded-full ${
+                  isLive ? "bg-red-600 animate-pulse" : "bg-gray-500"
+                }`}
+              ></span>
+              {isLive ? "Ao vivo agora 🔴" : "Offline"}
             </p>
           </div>
         </div>
@@ -102,48 +115,63 @@ export default function YoutubeSection() {
         </div>
       </div>
 
-      {/* Últimos vídeos */}
-      <h3 className="text-2xl font-bold mb-6 flex items-center justify-center gap-2">
-        <span role="img" aria-label="tv">
-          📺
-        </span>
-        Últimos Vídeos
-      </h3>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {videos.map((v) => (
-          <div
-            key={v.id}
-            onClick={() => setSelected(v.id)}
-            className="cursor-pointer bg-neutral-900 hover:bg-neutral-800 transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-lg border border-red-700/30"
-          >
-            <img
-              src={v.thumbnail}
-              alt={v.title}
-              className="w-full h-48 object-cover"
-            />
-            <div className="p-3 text-left">
-              <p className="font-semibold">{v.title}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Player Modal */}
-      {selected && (
-        <div
-          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50"
-          onClick={() => setSelected(null)}
-        >
-          <div className="relative w-full max-w-4xl mx-auto aspect-video">
-            <iframe
-              src={`https://www.youtube.com/embed/${selected}?autoplay=1`}
-              title="YouTube video player"
-              className="w-full h-full rounded-lg"
-              allowFullScreen
-            ></iframe>
-          </div>
+      {/* 🔴 Se estiver live, mostra o player diretamente */}
+      {isLive ? (
+        <div className="flex justify-center my-10">
+          <iframe
+            src="https://www.youtube.com/embed/live_stream?channel=UCfg5QnFApnh0RXZlZFzvLiQ&autoplay=1&mute=0"
+            title="Live stream"
+            className="w-full max-w-4xl aspect-video rounded-lg border-2 border-red-600"
+            allow="autoplay; encrypted-media"
+            allowFullScreen
+          ></iframe>
         </div>
+      ) : (
+        <>
+          {/* Últimos vídeos */}
+          <h3 className="text-2xl font-bold mb-6 flex items-center justify-center gap-2">
+            <span role="img" aria-label="tv">
+              📺
+            </span>
+            Últimos Vídeos
+          </h3>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {videos.map((v) => (
+              <div
+                key={v.id}
+                className="relative bg-neutral-900 hover:bg-neutral-800 transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-lg border border-red-700/30 cursor-pointer"
+                onClick={() => setPlaying(playing === v.id ? null : v.id)}
+              >
+                {playing === v.id ? (
+                  <iframe
+                    src={`https://www.youtube.com/embed/${v.id}?autoplay=1`}
+                    title={v.title}
+                    className="w-full h-48 object-cover"
+                    allow="autoplay; encrypted-media"
+                    allowFullScreen
+                  ></iframe>
+                ) : (
+                  <>
+                    <img
+                      src={v.thumbnail}
+                      alt={v.title}
+                      className="w-full h-48 object-cover"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="bg-black/60 p-3 rounded-full">
+                        <FaYoutube className="text-4xl text-red-600" />
+                      </div>
+                    </div>
+                  </>
+                )}
+                <div className="p-3 text-left">
+                  <p className="font-semibold">{v.title}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </section>
   );
