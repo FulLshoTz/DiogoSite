@@ -2,32 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
-/* === Fundo animado estilo fibra de carbono === */
+/* === Fundo de fibra de carbono animado (fixo) === */
 html, body, #root {
   height: 100%;
+  width: 100%;
   margin: 0;
   padding: 0;
-  background-color: black;
-  color: white;
   font-family: 'Inter', sans-serif;
+  color: white;
+  background: transparent;
   position: relative;
   overflow-x: hidden;
 }
 
-/* camada fixa que anima o fundo */
+/* Camada fixa atrás de todo o conteúdo */
 body::before {
   content: "";
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   z-index: -1;
   background-image:
-    repeating-linear-gradient(45deg, #1b1b1b 0, #1b1b1b 2px, #0b0b0b 2px, #0b0b0b 4px),
-    repeating-linear-gradient(-45deg, #1b1b1b 0, #1b1b1b 2px, #0b0b0b 2px, #0b0b0b 4px),
-    radial-gradient(circle at 30% 30%, rgba(255, 0, 0, 0.15), rgba(0, 0, 0, 0.9) 80%);
+    repeating-linear-gradient(45deg, #1b1b1b 0px, #1b1b1b 2px, #0b0b0b 2px, #0b0b0b 4px),
+    repeating-linear-gradient(-45deg, #1b1b1b 0px, #1b1b1b 2px, #0b0b0b 2px, #0b0b0b 4px),
+    radial-gradient(circle at 30% 30%, rgba(255, 0, 0, 0.12), rgba(0, 0, 0, 0.9) 80%);
   background-size: 12px 12px, 12px 12px, 100% 100%;
+  background-attachment: fixed;
   background-blend-mode: overlay;
   animation: carbonShift 12s linear infinite;
 }
@@ -38,14 +37,27 @@ body::before {
   100% { background-position: 0 0, 0 0, 0 0; }
 }
 
-/* Transparência dos blocos */
+/* Forçar transparência dos containers React */
+#root > div,
+main,
+section,
+header,
+footer {
+  background-color: transparent !important;
+}
+
+/* Tornar todos os bg-black/bg-neutral visíveis mas translúcidos */
 [class*="bg-black"],
 [class*="bg-neutral-900"],
-[class*="bg-neutral-950"],
-header,
-footer,
-main,
-section {
-  background-color: rgba(0, 0, 0, 0.7) !important;
+[class*="bg-neutral-950"] {
+  background-color: rgba(0, 0, 0, 0.65) !important;
   backdrop-filter: blur(3px);
+}
+
+/* Links e animações */
+a {
+  transition: color 0.2s, transform 0.2s;
+}
+a:hover {
+  transform: scale(1.05);
 }
