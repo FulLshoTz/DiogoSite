@@ -1,5 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+import logo from "../assets/logo.png"; // 🟢 IMPORTA o logo da pasta assets
 
 export default function Header() {
   const links = [
@@ -13,7 +14,7 @@ export default function Header() {
     <header className="fixed top-0 left-0 w-full bg-black/20 backdrop-blur-md border-b border-red-700/50 z-50">
       <div className="flex items-center justify-between max-w-7xl mx-auto px-8 py-4">
         <div className="flex items-center gap-3">
-          <img src="/logo.png" alt="Logo" />
+          <img src={logo} alt="Logo" className="w-8 h-8" /> {/* ✅ caminho resolvido */}
           <h1 className="font-bold text-lg text-white">Diogo Rodrigues</h1>
         </div>
         <nav className="flex gap-8">
