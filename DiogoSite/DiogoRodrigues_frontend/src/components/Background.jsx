@@ -2,52 +2,69 @@ import React, { useEffect } from "react";
 
 export default function Background() {
   useEffect(() => {
-    // Apaga fundos pretos automáticos do Tailwind/Vite
-    document.body.style.background = "transparent";
-    document.getElementById("root").style.background = "transparent";
+    // remove camadas antigas
+    document.querySelectorAll("#carbon-bg").forEach(el => el.remove());
 
-    // Cria camada de fundo animada
-    const bg = document.createElement("div");
-    bg.id = "carbon-bg";
-    Object.assign(bg.style, {
+    // cria o canvas
+    const canvas = document.createElement("canvas");
+    canvas.id = "carbon-bg";
+    Object.assign(canvas.style, {
       position: "fixed",
       top: "0",
       left: "0",
       width: "100vw",
       height: "100vh",
-      zIndex: "-9999", // atrás de tudo
+      zIndex: "-9999",
       pointerEvents: "none",
-      backgroundImage: `
-        repeating-linear-gradient(45deg, #1b1b1b 0px, #1b1b1b 2px, #0b0b0b 2px, #0b0b0b 4px),
-        repeating-linear-gradient(-45deg, #1b1b1b 0px, #1b1b1b 2px, #0b0b0b 2px, #0b0b0b 4px),
-        radial-gradient(circle at 30% 30%, rgba(255,0,0,0.15), rgba(0,0,0,0.9) 80%)
-      `,
-      backgroundSize: "12px 12px, 12px 12px, 100% 100%",
-      backgroundBlendMode: "overlay",
-      backgroundAttachment: "fixed",
-      animation: "carbonShift 12s linear infinite",
+      background: "black",
     });
+    document.body.prepend(canvas);
 
-    // Injeta keyframes diretamente no documento
-    const style = document.createElement("style");
-    style.textContent = `
-      @keyframes carbonShift {
-        0% { background-position: 0 0, 0 0, 0 0; }
-        50% { background-position: 12px 12px, -12px -12px, 0 0; }
-        100% { background-position: 0 0, 0 0, 0 0; }
+    const ctx = canvas.getContext("2d");
+    let w, h, frame = 0;
+    const size = 10;
+
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+
+    function drawCarbon() {
+      ctx.clearRect(0, 0, w, h);
+      for (let y = 0; y < h; y += size) {
+        for (let x = 0; x < w; x += size) {
+          const shade =
+            ((x / size + y / size + frame) % 2 === 0)
+              ? "rgba(30,30,30,0.9)"
+              : "rgba(10,10,10,0.9)";
+          ctx.fillStyle = shade;
+          ctx.fillRect(x, y, size, size);
+        }
       }
-    `;
 
-    // Garante que só há uma camada
-    document.querySelectorAll("#carbon-bg").forEach(el => el.remove());
-    document.head.appendChild(style);
-    document.body.prepend(bg);
+      // overlay vermelho suave
+      const grad = ctx.createRadialGradient(w * 0.3, h * 0.3, 0, w * 0.3, h * 0.3, w * 0.8);
+      grad.addColorStop(0, "rgba(255,0,0,0.12)");
+      grad.addColorStop(1, "rgba(0,0,0,0.95)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+    }
 
-    console.log("✅ Fundo de carbono ativo");
+    function animate() {
+      frame += 0.03;
+      drawCarbon();
+      requestAnimationFrame(animate);
+    }
+
+    window.addEventListener("resize", resize);
+    resize();
+    animate();
+
+    console.log("✅ Fundo de carbono ativo (canvas)");
 
     return () => {
-      bg.remove();
-      style.remove();
+      window.removeEventListener("resize", resize);
+      canvas.remove();
     };
   }, []);
 
