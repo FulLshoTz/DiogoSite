@@ -7,32 +7,64 @@ export default function YoutubeSection() {
   const [error, setError] = useState(null);
   const [playing, setPlaying] = useState(null);
 
+  // 🎬 Mostra 3 vídeos de fallback enquanto o backend carrega
+  const fallbackVideos = [
+    {
+      id: "dQw4w9WgXcQ", // substitui pelos teus vídeos
+      title: "Vídeo 1 (placeholder)",
+      thumbnail: "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
+    },
+    {
+      id: "M7lc1UVf-VE",
+      title: "Vídeo 2 (placeholder)",
+      thumbnail: "https://i.ytimg.com/vi/M7lc1UVf-VE/hqdefault.jpg",
+    },
+    {
+      id: "eY52Zsg-KVI",
+      title: "Vídeo 3 (placeholder)",
+      thumbnail: "https://i.ytimg.com/vi/eY52Zsg-KVI/hqdefault.jpg",
+    },
+  ];
+
+  // Estado inicial com vídeos temporários
+  const [videos, setVideos] = useState(fallbackVideos);
+  const [info, setInfo] = useState({
+    title: "Carregando canal...",
+    subs: 0,
+    views: 0,
+    isLive: false,
+    thumb: "",
+  });
+
   useEffect(() => {
     async function fetchData() {
       try {
-        const [info, videosData] = await Promise.all([
+        const [infoRes, videosRes] = await Promise.all([
           getChannelInfo(),
           getLatestVideos(),
         ]);
 
-        const orderedVideos = (videosData?.videos || [])
-          .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
-          .slice(0, 3);
+        if (infoRes) {
+          setInfo({
+            title: infoRes.title || "Canal",
+            subs: infoRes?.stats?.subscriberCount || 0,
+            views: infoRes?.stats?.viewCount || 0,
+            thumb:
+              infoRes?.thumbnails?.high?.url ||
+              infoRes?.thumbnails?.medium?.url ||
+              "",
+            isLive: infoRes?.liveBroadcastContent === "live",
+          });
+        }
 
-        setData({
-          title: info?.title || "Canal",
-          subs: info?.stats?.subscriberCount || 0,
-          views: info?.stats?.viewCount || 0,
-          thumb:
-            info?.thumbnails?.high?.url ||
-            info?.thumbnails?.medium?.url ||
-            info?.thumbnails?.default?.url ||
-            "",
-          isLive: info?.liveBroadcastContent === "live",
-          videos: orderedVideos,
-        });
+        if (videosRes?.videos?.length > 0) {
+          const ordered = videosRes.videos
+            .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
+            .slice(0, 3);
+          setVideos(ordered);
+        }
       } catch (err) {
-        console.error("Erro ao carregar dados:", err);
+        console.error("Erro ao carregar YouTube:", err);
         setError("Falha ao carregar dados do YouTube");
       }
     }
@@ -47,18 +79,11 @@ export default function YoutubeSection() {
       </section>
     );
 
-  if (!data)
-    return (
-      <section className="text-center py-16 text-gray-400">
-        A carregar dados do YouTube...
-      </section>
-    );
-
-  const { title, subs, views, thumb, videos, isLive } = data;
+  const { title, subs, views, thumb, isLive } = info;
 
   return (
     <section className="max-w-7xl mx-auto text-center text-white px-4">
-      {/* Header do canal */}
+      {/* Cabeçalho do canal */}
       <div className="flex flex-col md:flex-row items-center justify-between mb-10">
         <div className="flex items-center gap-4">
           {thumb && (
@@ -84,7 +109,6 @@ export default function YoutubeSection() {
           </div>
         </div>
 
-        {/* Botões */}
         <div className="flex gap-4 mt-4 md:mt-0">
           <a
             href="https://www.youtube.com/@FulLshoT"
@@ -105,7 +129,7 @@ export default function YoutubeSection() {
         </div>
       </div>
 
-      {/* 🔴 Se estiver live, mostra o player diretamente */}
+      {/* Live stream ou últimos vídeos */}
       {isLive ? (
         <div className="flex justify-center my-10">
           <iframe
@@ -118,12 +142,8 @@ export default function YoutubeSection() {
         </div>
       ) : (
         <>
-          {/* Últimos vídeos */}
           <h3 className="text-2xl font-bold mb-6 flex items-center justify-center gap-2">
-            <span role="img" aria-label="tv">
-              📺
-            </span>
-            Últimos Vídeos
+            📺 Últimos Vídeos
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
