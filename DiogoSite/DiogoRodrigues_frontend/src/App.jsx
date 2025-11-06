@@ -6,6 +6,8 @@ import Circuitos from "./pages/Circuitos";
 import Definicoes from "./pages/Definicoes";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
+import Background from "./components/Background";
+
 
 function App() {
   // 🔁 Ping automático para manter backend acordado
