@@ -9,7 +9,7 @@ import Sidebar from "./components/Sidebar";
 import Background from "./components/Background";
 
 function App() {
-  // 🔁 Ping automático para manter backend acordado
+  // 🔁 Mantém o backend acordado
   useEffect(() => {
     const ping = () => {
       fetch("https://diogorodrigues-backend.onrender.com/")
@@ -17,23 +17,27 @@ function App() {
         .catch(() => console.log("Backend ainda a acordar..."));
     };
 
-    ping(); // logo ao abrir o site
+    ping();
     const interval = setInterval(ping, 30000);
     return () => clearInterval(interval);
   }, []);
 
   return (
     <>
-      {/* Fundo animado de fibra de carbono */}
       <Background />
 
-      {/* Estrutura principal do site */}
       <Router>
-        <div className="flex min-h-screen text-white">
+        <div
+          className="flex min-h-screen text-white"
+          style={{ background: "blue" }} // 🔵 TESTE 2 - cor do container principal
+        >
           <Sidebar />
           <div className="flex-1 flex flex-col">
             <Header />
-            <main className="flex-1 pt-20">
+            <main
+              className="flex-1 pt-20"
+              style={{ background: "green" }} // 🟢 TESTE 3 - cor do main
+            >
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/corridas" element={<Corridas />} />
