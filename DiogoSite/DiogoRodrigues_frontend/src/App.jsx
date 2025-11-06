@@ -6,31 +6,30 @@ import Circuitos from "./pages/Circuitos";
 import Definicoes from "./pages/Definicoes";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
-import { startCarbonBackground } from "./utils/carbonBackground";
+import Background from "./components/Background";
 
 function App() {
+  // 🔁 Ping automático para manter backend acordado
   useEffect(() => {
-    // 🔁 Mantém o backend acordado
     const ping = () => {
       fetch("https://diogorodrigues-backend.onrender.com/")
         .then(() => console.log("Ping backend ok"))
         .catch(() => console.log("Backend ainda a acordar..."));
     };
 
-    ping();
+    ping(); // logo ao abrir o site
     const interval = setInterval(ping, 30000);
-
-    // 🎨 Inicia o fundo animado
-    startCarbonBackground();
-
     return () => clearInterval(interval);
   }, []);
 
   return (
     <>
+      {/* Fundo animado de fibra de carbono */}
+      <Background />
+
       {/* Estrutura principal do site */}
       <Router>
-        <div className="flex min-h-screen text-white">
+        <div className="flex min-h-screen bg-black text-white">
           <Sidebar />
           <div className="flex-1 flex flex-col">
             <Header />
