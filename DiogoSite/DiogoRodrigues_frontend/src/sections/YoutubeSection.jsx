@@ -3,18 +3,14 @@ import React, { useEffect, useState } from "react";
 const YoutubeSection = () => {
   const [channel, setChannel] = useState(null);
   const [videos, setVideos] = useState([
-    // placeholders instantâneos (caso o backend esteja a acordar)
     { id: "mErQBHBnQ0U", title: "8h Bahrain | TREINO | Diogo Rodrigues", thumbnail: "https://i.ytimg.com/vi/mErQBHBnQ0U/hqdefault.jpg" },
     { id: "BiDkc-i6ICs", title: "8h Bahrain | TREINO | Diogo Rodrigues", thumbnail: "https://i.ytimg.com/vi/BiDkc-i6ICs/hqdefault.jpg" },
     { id: "CwDFK3weUBE", title: "ROUND 2 | LMU CHAMPIONSHIP Interlagos | LMGT3 Fixed | Diogo Rodrigues", thumbnail: "https://i.ytimg.com/vi/CwDFK3weUBE/hqdefault.jpg" }
   ]);
 
   const [loading, setLoading] = useState(true);
-
-  // 🧠 Vai buscar o ID do canal ao .env (Render)
   const channelId = import.meta.env.VITE_YOUTUBE_CHANNEL_ID;
 
-  // 🔹 Info do canal
   useEffect(() => {
     fetch(`https://diogorodrigues-backend.onrender.com/api/youtube/channel-info?id=${channelId}`)
       .then((res) => res.json())
@@ -22,7 +18,6 @@ const YoutubeSection = () => {
       .catch(() => console.warn("⚠️ Falha ao carregar info do canal"));
   }, [channelId]);
 
-  // 🔹 Vídeos mais recentes
   useEffect(() => {
     fetch(`https://diogorodrigues-backend.onrender.com/api/youtube/latest-videos?id=${channelId}`)
       .then((res) => res.json())
@@ -35,15 +30,10 @@ const YoutubeSection = () => {
 
   return (
     <section className="max-w-7xl mx-auto text-center text-white px-4 py-16">
-      {/* 🔺 Banner e estatísticas do canal */}
+      {/* 🔹 Informação do canal (sem banner) */}
       {channel && (
         <div className="mb-10">
-          <img
-            src={channel.banner?.bannerExternalUrl}
-            alt="YouTube Banner"
-            className="w-full h-48 object-cover rounded-lg shadow-lg mb-6"
-          />
-          <div className="flex flex-col sm:flex-row items-center justify-between bg-black/40 p-4 rounded-lg border border-red-700/40">
+          <div className="flex flex-col sm:flex-row items-center justify-between bg-black/40 p-4 rounded-lg border border-red-700/40 shadow-md">
             <div className="flex items-center gap-4">
               <img
                 src={channel.thumbnails?.high?.url}
@@ -52,7 +42,6 @@ const YoutubeSection = () => {
               />
               <div className="text-left">
                 <h2 className="text-2xl font-bold">{channel.title}</h2>
-                <p className="text-sm text-gray-300">{channel.description}</p>
                 <p className="text-sm mt-1 text-gray-400">
                   {channel.stats?.subscriberCount} subscritores • {channel.stats?.viewCount} visualizações
                 </p>
@@ -81,7 +70,7 @@ const YoutubeSection = () => {
         </div>
       )}
 
-      {/* 🔺 Lista de vídeos */}
+      {/* 🔹 Título e vídeos */}
       <h3 className="text-2xl font-bold mb-6 flex items-center justify-center gap-2">
         📺 Últimos Vídeos
       </h3>
