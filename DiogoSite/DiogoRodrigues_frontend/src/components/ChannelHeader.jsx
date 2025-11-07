@@ -22,7 +22,7 @@ export default function ChannelHeader() {
 
   if (loading) {
     return (
-      <section className="bg-red-700 text-white py-8 text-center">
+      <section className="bg-gradient-to-r from-red-900 to-black text-white py-8 text-center border border-red-900 rounded-lg mx-4 mt-4">
         <p>A carregar informações do canal...</p>
       </section>
     );
@@ -30,7 +30,7 @@ export default function ChannelHeader() {
 
   if (!channel) {
     return (
-      <section className="bg-red-700 text-white py-8 text-center">
+      <section className="bg-gradient-to-r from-red-900 to-black text-white py-8 text-center border border-red-900 rounded-lg mx-4 mt-4">
         <p>Erro a carregar canal.</p>
       </section>
     );
@@ -41,20 +41,19 @@ export default function ChannelHeader() {
   const title = channel.title || "Canal";
 
   return (
-    <section className="bg-red-700 text-white py-8 shadow-lg">
+    <section className="bg-gradient-to-r from-red-900 to-black text-white py-6 rounded-xl border border-red-900 shadow-md mx-4 mt-4">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between px-6 gap-6">
-        
         {/* Esquerda: avatar e info */}
         <div className="flex items-center gap-4">
-          <div className="p-[3px] bg-white rounded-full">
+          <div className="p-[3px] bg-red-700 rounded-full">
             <img
               src={thumb}
               alt={title}
-              className="w-20 h-20 rounded-full border-4 border-red-700 shadow-md"
+              className="w-20 h-20 rounded-full border-4 border-red-600 shadow-md"
             />
           </div>
           <div>
-            <h2 className="text-2xl font-bold">{title}</h2>
+            <h2 className="text-2xl font-bold text-red-400">{title}</h2>
             <p className="text-sm opacity-90">
               {stats.subscriberCount} subs • {stats.viewCount} visualizações
             </p>
@@ -77,15 +76,10 @@ export default function ChannelHeader() {
             href="https://www.youtube.com/@FulLshoT"
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-2 bg-white text-red-700 font-semibold px-4 py-2 rounded-lg hover:bg-red-100 transition-transform hover:scale-105"
+            className="flex items-center gap-2 bg-red-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-red-500 transition-transform hover:scale-105"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 576 512"
-              className="w-5 h-5"
-              fill="currentColor"
-            >
-              <path d="M549.7 124.1c-6.3-23.6-24.8-42.3-48.3-48.6C458.8 64 288 64 288 64S117.2 64 74.6 75.5c-23.5 6.3-42 25-48.3 48.6C14.9 166.9 14.9 256 14.9 256s0 89.1 11.4 131.9c6.3 23.6 24.8 41.5 48.3 47.8C117.2 448 288 448 288 448s170.8 0 213.4-11.5c23.5-6.3 42-24.2 48.3-47.8 11.4-42.8 11.4-131.9 11.4-131.9s0-89.1-11.4-131.9zM232.1 337.6V174.4l142.7 81.6-142.7 81.6z" />
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" className="w-5 h-5" fill="currentColor">
+              <path d="M549.7 124.1c-6.3-23.6-24.8-42.3-48.3-48.6C458.8 64 288 64 288 64S117.2 64 74.6 75.5C51.1 81.8 32.6 100.4 26.3 124c-11.4 42.8-11.4 132-11.4 132s0 89.2 11.4 132c6.3 23.6 24.8 42.3 48.3 48.6C117.2 448 288 448 288 448s170.8 0 213.4-11.4c23.5-6.3 42-25 48.3-48.6 11.4-42.8 11.4-132 11.4-132s0-89.2-11.4-132zM232.1 337.6V174.4l142.7 81.6-142.7 81.6z"/>
             </svg>
             YouTube
           </a>
@@ -94,15 +88,10 @@ export default function ChannelHeader() {
             href="https://www.instagram.com/diofdx"
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-2 bg-white text-pink-600 font-semibold px-4 py-2 rounded-lg hover:bg-pink-100 transition-transform hover:scale-105"
+            className="flex items-center gap-2 bg-pink-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-pink-500 transition-transform hover:scale-105"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 448 512"
-              className="w-5 h-5"
-              fill="currentColor"
-            >
-              <path d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9S160.5 370.8 224.1 370.8 339 319.5 339 255.9 287.7 141 224.1 141zm146.4-25.3a26.8 26.8 0 1 1 0 53.6 26.8 26.8 0 0 1 0-53.6zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z" />
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" className="w-5 h-5" fill="currentColor">
+              <path d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9S160.5 370.8 224.1 370.8 339 319.5 339 255.9 287.7 141 224.1 141zm146.4-25.3a26.8 26.8 0 1 1 0 53.6 26.8 26.8 0 0 1 0-53.6zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z"/>
             </svg>
             Instagram
           </a>
