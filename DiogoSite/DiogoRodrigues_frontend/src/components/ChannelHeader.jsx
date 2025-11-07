@@ -5,21 +5,29 @@ export default function ChannelHeader() {
   const [isLive, setIsLive] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // fallback local (quando API não responde)
+  const fallbackChannel = {
+    title: "FulLshoT | Diogo Rodrigues",
+    thumbnails: {
+      high: {
+        url: "https://yt3.ggpht.com/cg4Dfb7uuvYU48SCLabYtHJ8BZ5zRdeszrMJIN0Mm6MpVlH_PnHZPDEzE6PlvR4W6mbr-q2d=s800-c-k-c0x00ffffff-no-rj",
+      },
+    },
+    stats: {
+      subscriberCount: "282",
+      viewCount: "178986",
+    },
+  };
+
   async function loadChannel() {
     try {
       const res = await fetch("https://diogorodrigues-backend.onrender.com/api/youtube/channel-info");
+      if (!res.ok) throw new Error("API não respondeu");
       const data = await res.json();
-      console.log("📺 Canal recebido:", data);
       setChannel(data);
     } catch (e) {
-      console.warn("⚠️ Erro ao carregar canal:", e);
-      setChannel({
-        title: "FulLshoT | Diogo Rodrigues",
-        stats: { subscriberCount: 282, viewCount: 178986 },
-        thumbnails: {
-          high: { url: "https://yt3.googleusercontent.com/ytc/AIdro_mExemplo=s88-c-k-c0x00ffffff-no-rj" },
-        },
-      });
+      console.warn("⚠️ Erro ao carregar canal, a usar fallback:", e);
+      setChannel(fallbackChannel);
     } finally {
       setLoading(false);
     }
@@ -29,7 +37,6 @@ export default function ChannelHeader() {
     try {
       const res = await fetch("https://diogorodrigues-backend.onrender.com/api/youtube/latest-videos");
       const data = await res.json();
-      console.log("📡 Live check:", data);
       const liveId =
         data?.live?.id ||
         data?.liveId ||
@@ -64,17 +71,21 @@ export default function ChannelHeader() {
   }
 
   const stats = channel?.stats || {};
-  const thumb = channel?.thumbnails?.high?.url || channel?.thumbnails?.default?.url || "";
-  const title = channel?.title || "Canal";
+  const thumb =
+    channel?.thumbnails?.high?.url ||
+    channel?.thumbnails?.default?.url ||
+    fallbackChannel.thumbnails.high.url;
+  const title = channel?.title || fallbackChannel.title;
 
   return (
     <Wrapper>
+      {/* Esquerda: avatar + info */}
       <div className="flex items-center gap-4">
-        <div className="rounded-full p-[1px] bg-gradient-to-r from-red-600 to-red-800">
+        <div className="rounded-full p-[1.5px] bg-gradient-to-r from-red-600 to-red-800">
           <img
             src={thumb}
             alt={title}
-            className="w-20 h-20 rounded-full border border-red-600 object-cover"
+            className="w-20 h-20 rounded-full border border-red-600"
           />
         </div>
         <div>
@@ -91,6 +102,7 @@ export default function ChannelHeader() {
         </div>
       </div>
 
+      {/* Direita: botões */}
       <div className="flex gap-4">
         <a
           href="https://www.youtube.com/@FulLshoT"
