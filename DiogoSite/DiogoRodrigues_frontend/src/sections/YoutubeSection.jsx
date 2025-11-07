@@ -10,7 +10,7 @@ export default function YoutubeSection() {
 
   const [live, setLive] = useState(null);
   const [loading, setLoading] = useState(true);
-  };
+  
 
   useEffect(() => {
     async function fetchData() {
