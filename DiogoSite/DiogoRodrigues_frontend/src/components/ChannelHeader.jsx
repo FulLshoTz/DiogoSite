@@ -50,7 +50,7 @@ export default function ChannelHeader() {
   }, []);
 
   const Wrapper = ({ children }) => (
-<section className="bg-gradient-to-r from-[#3b0000] via-[#220000] to-[#0b0000] text-white py-5 rounded-xl border border-red-900 shadow-md mx-4 mt-2 mb-0">
+<section className="bg-gradient-to-r from-[#3b0000] via-[#220000] to-[#0b0000] text-white py-4 rounded-xl border border-red-900 shadow-md mx-4 mb-2">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between px-6 gap-6">
         {children}
       </div>
