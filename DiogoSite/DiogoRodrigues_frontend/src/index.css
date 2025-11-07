@@ -12,6 +12,7 @@ html, body, #root {
   color: white;
 }
 
+/* estes overrides eram os teus — mantive */
 [class*="bg-black"],
 [class*="bg-neutral-900"],
 [class*="bg-neutral-950"],
@@ -21,4 +22,16 @@ footer,
 section {
   background-color: rgba(0, 0, 0, 0.65) !important;
   backdrop-filter: blur(3px);
+}
+
+/* ====== LIVE PULSE (borda do avatar quando está online) ====== */
+@keyframes live-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(239, 68, 68, .6); }
+  70%  { box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.live-ring {
+  animation: live-pulse 1.6s ease-in-out infinite;
+  border-radius: 9999px;
 }
