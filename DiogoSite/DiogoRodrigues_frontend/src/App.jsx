@@ -33,6 +33,7 @@ function App() {
           <Sidebar />
           <div className="flex-1 flex flex-col">
             <Header />
+            {/* padding-top = altura do header */}
             <main className="flex-1 pt-20">
               <Routes>
                 <Route path="/" element={<Home />} />
