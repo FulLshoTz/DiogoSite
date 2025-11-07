@@ -10,17 +10,6 @@ export default function YoutubeSection() {
 
   const [live, setLive] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  const formatDate = (dateStr) => {
-    try {
-      return new Date(dateStr).toLocaleDateString("pt-PT", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      });
-    } catch {
-      return "";
-    }
   };
 
   useEffect(() => {
