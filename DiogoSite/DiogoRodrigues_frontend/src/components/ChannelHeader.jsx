@@ -43,13 +43,16 @@ export default function ChannelHeader() {
   return (
     <section className="bg-red-700 text-white py-8 shadow-lg">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between px-6 gap-6">
+        
         {/* Esquerda: avatar e info */}
         <div className="flex items-center gap-4">
-          <img
-            src={thumb}
-            alt={title}
-            className="w-20 h-20 rounded-full border-4 border-white shadow-md"
-          />
+          <div className="p-[3px] bg-white rounded-full">
+            <img
+              src={thumb}
+              alt={title}
+              className="w-20 h-20 rounded-full border-4 border-red-700 shadow-md"
+            />
+          </div>
           <div>
             <h2 className="text-2xl font-bold">{title}</h2>
             <p className="text-sm opacity-90">
