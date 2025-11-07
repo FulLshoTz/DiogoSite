@@ -22,7 +22,7 @@ export default function ChannelHeader() {
 
   if (loading) {
     return (
-      <section className="bg-gradient-to-r from-[#2b0000] via-[#220000] to-black text-white py-8 text-center border border-red-900 rounded-lg mx-4 mt-4">
+      <section className="bg-gradient-to-r from-[#3b0000] via-[#210000] to-black text-white py-6 text-center border border-red-900 rounded-lg mx-4 mt-4">
         <p>A carregar informações do canal...</p>
       </section>
     );
@@ -30,7 +30,7 @@ export default function ChannelHeader() {
 
   if (!channel) {
     return (
-      <section className="bg-gradient-to-r from-[#2b0000] via-[#220000] to-black text-white py-8 text-center border border-red-900 rounded-lg mx-4 mt-4">
+      <section className="bg-gradient-to-r from-[#3b0000] via-[#210000] to-black text-white py-6 text-center border border-red-900 rounded-lg mx-4 mt-4">
         <p>Erro a carregar canal.</p>
       </section>
     );
@@ -41,16 +41,16 @@ export default function ChannelHeader() {
   const title = channel.title || "Canal";
 
   return (
-    <section className="bg-gradient-to-r from-[#2b0000] via-[#220000] to-black text-white py-6 rounded-xl border border-red-900 shadow-md mx-4 mt-4 mb-4">
+    <section className="bg-gradient-to-r from-[#3b0000] via-[#220000] to-[#0b0000] text-white py-5 rounded-xl border border-red-900 shadow-md mx-4 mt-4 mb-2">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between px-6 gap-6">
         
         {/* Esquerda: avatar e info */}
         <div className="flex items-center gap-4">
-          <div className="rounded-full p-[2px] bg-gradient-to-r from-red-600 to-red-800">
+          <div className="rounded-full p-[1.5px] bg-gradient-to-r from-red-600 to-red-800">
             <img
               src={thumb}
               alt={title}
-              className="w-20 h-20 rounded-full border border-red-500"
+              className="w-20 h-20 rounded-full border border-red-600"
             />
           </div>
           <div>
