@@ -3,11 +3,11 @@ import ChannelHeader from "../components/ChannelHeader";
 
 export default function YoutubeSection() {
   // placeholders instantâneos (mostram logo)
-  const [videos, setVideos] = useState([
-    { id: "mErQBHBnQ0U", title: "8h Bahrain | TREINO | Diogo Rodrigues", publishedAt: "2025-11-06T11:55:18Z" },
-    { id: "BiDkc-i6ICs", title: "8h Bahrain | TREINO | Diogo Rodrigues", publishedAt: "2025-11-05T11:59:18Z" },
-    { id: "CwDFK3weUBE", title: "ROUND 2 | LMU CHAMPIONSHIP Interlagos | LMGT3 Fixed | Diogo Rodrigues", publishedAt: "2025-08-06T05:42:20Z" }
-  ]);
+const [videos, setVideos] = useState([
+  { id: "akkgj63j5rg", title: "Short | acidente #simracing #fulLshoT", publishedAt: "2025-11-05T18:00:00Z" },
+  { id: "95r7yKBo-4w", title: "Volta onboard | GT3 | Portimão", publishedAt: "2025-11-04T20:00:00Z" },
+  { id: "gupDgHpu3DA", title: "Crash compilation | Simracing", publishedAt: "2025-11-03T22:00:00Z" }
+]);
   const [live, setLive] = useState(null);
   const [loading, setLoading] = useState(true);
 
