@@ -56,7 +56,7 @@ const [videos, setVideos] = useState([
   return (
     <>
       <ChannelHeader />
-      <section className="max-w-7xl mx-auto text-white px-4 py-6 mt-0">
+      <section className="bg-gradient-to-r from-[#3b0000] via-[#220000] to-[#0b0000] text-white py-5 rounded-xl border border-red-900 shadow-md mx-4 mt-2 mb-1">
         {/* Título com ícone + linha */}
         <div className="flex items-center gap-3 mb-6">
           <svg className="w-6 h-6 text-red-600" viewBox="0 0 576 512" fill="currentColor">
