@@ -7,10 +7,11 @@ export default function YoutubeSection() {
     { id: "95r7yKBo-4w", title: "Volta onboard | GT3 | Portimão", publishedAt: "2025-11-04T20:00:00Z" },
     { id: "gupDgHpu3DA", title: "Crash compilation | Simracing", publishedAt: "2025-11-03T22:00:00Z" }
   ]);
+
   const [live, setLive] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  function formatDate(dateStr) {
+  const formatDate = (dateStr) => {
     try {
       return new Date(dateStr).toLocaleDateString("pt-PT", {
         day: "2-digit",
@@ -20,7 +21,7 @@ export default function YoutubeSection() {
     } catch {
       return "";
     }
-  }
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -28,21 +29,22 @@ export default function YoutubeSection() {
         const res = await fetch("https://diogorodrigues-backend.onrender.com/api/youtube/latest-videos");
         const data = await res.json();
 
-        const liveObj = data?.live || null;
-        const liveId = liveObj?.id || data?.liveId || null;
+        // Garante compatibilidade com diferentes formatos
+        const videosFromApi = data?.videos || data?.latestVideos || [];
+        const liveId = data?.live?.id || data?.liveId || null;
 
         if (liveId) {
           setLive({
             id: liveId,
-            title: liveObj?.title || "🔴 Live no ar",
+            title: data?.live?.title || "🔴 Live no ar",
           });
-          setVideos([]);
-        } else if (Array.isArray(data?.videos) && data.videos.length) {
-          setVideos(data.videos.slice(0, 3));
+          setVideos([]); // substitui tudo pela live
+        } else if (Array.isArray(videosFromApi) && videosFromApi.length > 0) {
+          setVideos(videosFromApi.slice(0, 3));
           setLive(null);
         }
-      } catch {
-        console.warn("⚠️ Backend não respondeu — a mostrar placeholders");
+      } catch (err) {
+        console.warn("⚠️ Erro ao buscar vídeos:", err);
       } finally {
         setLoading(false);
       }
@@ -54,10 +56,11 @@ export default function YoutubeSection() {
   return (
     <>
       <ChannelHeader />
-      <section className="max-w-7xl mx-auto text-white px-4 py-4 mt-0">
-        <div className="flex items-center gap-3 mb-4">
+      <section className="max-w-7xl mx-auto text-white px-4 py-6 mt-2">
+        {/* Cabeçalho da secção */}
+        <div className="flex items-center gap-3 mb-6">
           <svg className="w-6 h-6 text-red-600" viewBox="0 0 576 512" fill="currentColor">
-            <path d="M549.7 124.1c-6.3-23.6-24.8-42.3-48.3-48.6C458.8 64 288 64 288 64S117.2 64 74.6 75.5C51.1 81.8 32.6 100.4 26.3 124c-11.4 42.8-11.4 132-11.4 132s0 89.2 11.4 132c6.3 23.6 24.8 42.3 48.3 48.6C117.2 448 288 448 288 448s170.8 0 213.4-11.4c23.5-6.3 42-25 48.3-48.6 11.4-42.8 11.4-132 11.4-132s0-89.2-11.4-132zM232.1 337.6V174.4l142.7 81.6-142.7 81.6z" />
+            <path d="M549.7 124.1c-6.3-23.6-24.8-42.3-48.3-48.6C458.8 64 288 64 288 64S117.2 64 74.6 75.5C51.1 81.8 32.6 100.4 26.3 124c-11.4 42.8-11.4 132-11.4 132s0 89.2 11.4 132c6.3 23.6 24.8 42.3 48.3 48.6C117.2 448 288 448 288 448s170.8 0 213.4-11.4c23.5-6.3 42-25 48.3-48.6 11.4-42.8 11.4-132 11.4-132s0-89.2-11.4-132zM232.1 337.6V174.4l142.7 81.6-142.7 81.6z"/>
           </svg>
           <h3 className="text-2xl font-bold tracking-wide">Últimos Vídeos</h3>
           <div className="flex-1 h-[2px] bg-red-600"></div>
