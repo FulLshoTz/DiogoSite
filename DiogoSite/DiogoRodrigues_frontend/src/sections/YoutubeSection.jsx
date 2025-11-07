@@ -3,9 +3,9 @@ import ChannelHeader from "../components/ChannelHeader";
 
 export default function YoutubeSection() {
   const [videos, setVideos] = useState([
-    { id: "akkgj63j5rg", title: "Short | acidente #simracing #fulLshoT", publishedAt: "2025-11-05T18:00:00Z" },
-    { id: "95r7yKBo-4w", title: "Volta onboard | GT3 | Portimão", publishedAt: "2025-11-04T20:00:00Z" },
-    { id: "gupDgHpu3DA", title: "Crash compilation | Simracing", publishedAt: "2025-11-03T22:00:00Z" }
+    { id: "akkgj63j5rg"},
+    { id: "95r7yKBo-4w"},
+    { id: "gupDgHpu3DA"}
   ]);
 
   const [live, setLive] = useState(null);
