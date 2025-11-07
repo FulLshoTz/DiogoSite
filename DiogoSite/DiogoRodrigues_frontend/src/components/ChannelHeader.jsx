@@ -19,10 +19,8 @@ export default function ChannelHeader() {
 
   async function checkLive() {
     try {
-      // 1) tenta endpoint que já tens
       const res = await fetch("https://diogorodrigues-backend.onrender.com/api/youtube/latest-videos");
       const data = await res.json();
-      // aceita várias formas de sinalizar live sem rebentar
       const liveId =
         data?.live?.id ||
         data?.liveId ||
@@ -30,7 +28,6 @@ export default function ChannelHeader() {
 
       setIsLive(Boolean(liveId));
     } catch {
-      // fallback (se existir no backend)
       try {
         const res2 = await fetch("https://diogorodrigues-backend.onrender.com/api/youtube/live");
         const data2 = await res2.json();
@@ -44,13 +41,12 @@ export default function ChannelHeader() {
   useEffect(() => {
     loadChannel();
     checkLive();
-    // atualiza o badge a cada 60s
     const id = setInterval(checkLive, 60000);
     return () => clearInterval(id);
   }, []);
 
   const Wrapper = ({ children }) => (
-<section className="bg-gradient-to-r from-[#3b0000] via-[#220000] to-[#0b0000] text-white py-4 rounded-xl border border-red-900 shadow-md mx-4 mb-2">
+    <section className="bg-gradient-to-r from-black via-[#200000] to-[#3b0000] text-white py-4 rounded-xl border border-red-900 shadow-md mx-4 mb-2">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between px-6 gap-6">
         {children}
       </div>
@@ -81,7 +77,7 @@ export default function ChannelHeader() {
     <Wrapper>
       {/* Esquerda: avatar + info */}
       <div className="flex items-center gap-4">
-        <div className={`rounded-full p-[1.5px] bg-gradient-to-r from-red-600 to-red-800 ${isLive ? "live-ring" : ""}`}>
+        <div className={`rounded-full p-[1px] bg-red-600`}>
           <img
             src={thumb}
             alt={title}
@@ -111,7 +107,7 @@ export default function ChannelHeader() {
           className="flex items-center gap-2 bg-red-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-red-500 transition-transform hover:scale-105"
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" className="w-5 h-5" fill="currentColor">
-            <path d="M549.7 124.1c-6.3-23.6-24.8-42.3-48.3-48.6C458.8 64 288 64 288 64S117.2 64 74.6 75.5C51.1 81.8 32.6 100.4 26.3 124c-11.4 42.8-11.4 132-11.4 132s0 89.2 11.4 132c6.3 23.6 24.8 42.3 48.3 48.6C117.2 448 288 448 288 448s170.8 0 213.4-11.4c23.5-6.3 42-25 48.3-48.6 11.4-42.8 11.4-132 11.4-132s0-89.2-11.4-132zM232.1 337.6V174.4l142.7 81.6-142.7 81.6z"/>
+            <path d="M549.7 124.1c-6.3-23.6-24.8-42.3-48.3-48.6C458.8 64 288 64 288 64S117.2 64 74.6 75.5C51.1 81.8 32.6 100.4 26.3 124c-11.4 42.8-11.4 132-11.4 132s0 89.2 11.4 132c6.3 23.6 24.8 42.3 48.3 48.6C117.2 448 288 448 288 448s170.8 0 213.4-11.4c23.5-6.3 42-25 48.3-48.6 11.4-42.8 11.4-132 11.4-132s0-89.2-11.4-132zM232.1 337.6V174.4l142.7 81.6-142.7 81.6z" />
           </svg>
           YouTube
         </a>
@@ -127,7 +123,7 @@ export default function ChannelHeader() {
           }}
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" className="w-5 h-5" fill="currentColor">
-            <path d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9S160.5 370.8 224.1 370.8 339 319.5 339 255.9 287.7 141 224.1 141zm146.4-25.3a26.8 26.8 0 1 1 0 53.6 26.8 26.8 0 0 1 0-53.6zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z"/>
+            <path d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9S160.5 370.8 224.1 370.8 339 319.5 339 255.9 287.7 141 224.1 141zm146.4-25.3a26.8 26.8 0 1 1 0 53.6 26.8 26.8 0 0 1 0-53.6zM398.8 388c-7.8 19.6-22.9 34.7-42.6 42.6-29.5 11.7-99.5 9-132.1 9s-102.7 2.6-132.1-9c-19.6-7.8-34.7-22.9-42.6-42.6-11.7-29.5-9-99.5-9-132.1s-2.6-102.7 9-132.1c7.8-19.6 22.9-34.7 42.6-42.6 29.5-11.7 99.5-9 132.1-9s102.7-2.6 132.1 9c19.6 7.8 34.7 22.9 42.6 42.6 11.7 29.5 9 99.5 9 132.1s2.7 102.7-9 132.1z" />
           </svg>
           Instagram
         </a>
