@@ -2,15 +2,29 @@ import React, { useState, useEffect } from "react";
 import ChannelHeader from "../components/ChannelHeader";
 
 export default function YoutubeSection() {
+  // placeholders locais
   const [videos, setVideos] = useState([
-    { id: "akkgj63j5rg"},
-    { id: "95r7yKBo-4w"},
-    { id: "gupDgHpu3DA"}
+    { id: "akkgj63j5rg", title: "", publishedAt: "" },
+    { id: "95r7yKBo-4w", title: "", publishedAt: "" },
+    { id: "gupDgHpu3DA", title: "", publishedAt: "" },
   ]);
 
   const [live, setLive] = useState(null);
   const [loading, setLoading] = useState(true);
-  
+
+  // função utilitária para formatar datas
+  function formatDate(dateStr) {
+    if (!dateStr) return "";
+    try {
+      return new Date(dateStr).toLocaleDateString("pt-PT", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+    } catch {
+      return "";
+    }
+  }
 
   useEffect(() => {
     async function fetchData() {
@@ -18,7 +32,8 @@ export default function YoutubeSection() {
         const res = await fetch("https://diogorodrigues-backend.onrender.com/api/youtube/latest-videos");
         const data = await res.json();
 
-        // Garante compatibilidade com diferentes formatos
+        console.log("📦 Data recebida:", data);
+
         const videosFromApi = data?.videos || data?.latestVideos || [];
         const liveId = data?.live?.id || data?.liveId || null;
 
@@ -27,7 +42,7 @@ export default function YoutubeSection() {
             id: liveId,
             title: data?.live?.title || "🔴 Live no ar",
           });
-          setVideos([]); // substitui tudo pela live
+          setVideos([]);
         } else if (Array.isArray(videosFromApi) && videosFromApi.length > 0) {
           setVideos(videosFromApi.slice(0, 3));
           setLive(null);
@@ -49,7 +64,7 @@ export default function YoutubeSection() {
         {/* Cabeçalho da secção */}
         <div className="flex items-center gap-3 mb-6">
           <svg className="w-6 h-6 text-red-600" viewBox="0 0 576 512" fill="currentColor">
-            <path d="M549.7 124.1c-6.3-23.6-24.8-42.3-48.3-48.6C458.8 64 288 64 288 64S117.2 64 74.6 75.5C51.1 81.8 32.6 100.4 26.3 124c-11.4 42.8-11.4 132-11.4 132s0 89.2 11.4 132c6.3 23.6 24.8 42.3 48.3 48.6C117.2 448 288 448 288 448s170.8 0 213.4-11.4c23.5-6.3 42-25 48.3-48.6 11.4-42.8 11.4-132 11.4-132s0-89.2-11.4-132zM232.1 337.6V174.4l142.7 81.6-142.7 81.6z"/>
+            <path d="M549.7 124.1c-6.3-23.6-24.8-42.3-48.3-48.6C458.8 64 288 64 288 64S117.2 64 74.6 75.5C51.1 81.8 32.6 100.4 26.3 124c-11.4 42.8-11.4 132-11.4 132s0 89.2 11.4 132c6.3 23.6 24.8 42.3 48.3 48.6C117.2 448 288 448 288 448s170.8 0 213.4-11.4c23.5-6.3 42-25 48.3-48.6 11.4-42.8 11.4-132 11.4-132s0-89.2-11.4-132zM232.1 337.6V174.4l142.7 81.6-142.7 81.6z" />
           </svg>
           <h3 className="text-2xl font-bold tracking-wide">Últimos Vídeos</h3>
           <div className="flex-1 h-[2px] bg-red-600"></div>
@@ -57,6 +72,7 @@ export default function YoutubeSection() {
 
         {loading && <p className="text-gray-400 mb-6">A carregar do YouTube…</p>}
 
+        {/* Se estiver live → mostra a live */}
         {live ? (
           <div className="rounded-xl overflow-hidden border border-red-700/40 shadow-lg">
             <div className="aspect-video">
@@ -74,22 +90,31 @@ export default function YoutubeSection() {
             </div>
           </div>
         ) : (
+          // Caso contrário → mostra os 3 vídeos
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
             {videos.map((v) => (
-              <div key={v.id} className="bg-neutral-900 rounded-xl overflow-hidden shadow-lg border border-red-700/30">
+              <div
+                key={v.id}
+                className="bg-neutral-900 rounded-xl overflow-hidden shadow-lg border border-red-700/30"
+              >
                 <div className="aspect-video">
                   <iframe
                     className="w-full h-full"
                     src={`https://www.youtube.com/embed/${v.id}?rel=0&modestbranding=1&playsinline=1`}
-                    title={v.title}
+                    title={v.title || "Vídeo YouTube"}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                   ></iframe>
                 </div>
-                <div className="p-4 text-left">
-                  <p className="font-semibold mb-1">{v.title}</p>
-                  <p className="text-sm text-gray-400">{formatDate(v.publishedAt)}</p>
-                </div>
+                {/* Só mostra título/data se vierem da API */}
+                {v.title && (
+                  <div className="p-4 text-left">
+                    <p className="font-semibold mb-1">{v.title}</p>
+                    {v.publishedAt && (
+                      <p className="text-sm text-gray-400">{formatDate(v.publishedAt)}</p>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </div>
