@@ -1,4 +1,5 @@
 import os
+import json
 from flask import Flask, jsonify
 from flask_cors import CORS
 import requests
@@ -14,26 +15,44 @@ YT_CHANNEL_URL = "https://www.youtube.com/@FulLshoT"
 def create_app():
     app = Flask(__name__)
 
-    frontend = os.getenv("CORS_ORIGIN", "https://diogorodrigues.pt")
-    CORS(app, resources={r"/api/*": {"origins": frontend}})
+    # ----------------------------------------------------------------
+    #  CORS FIX — suporta LISTAS vindas do Render sem falhar
+    # ----------------------------------------------------------------
+    cors_raw = os.getenv("CORS_ORIGIN", "[]")
+
+    try:
+        # Se for lista JSON válida, usa
+        cors_origins = json.loads(cors_raw)
+    except:
+        # Se for string, separa por vírgulas
+        cors_origins = [o.strip() for o in cors_raw.split(",") if o.strip()]
+
+    if not cors_origins:
+        cors_origins = ["*"]  # fallback seguro
+
+    CORS(app, resources={r"/api/*": {"origins": cors_origins}})
 
     # ----------------------------------------------------------------
-    #  SAFE XML FETCH  —  NÃO REBENTA MESMO QUE O RSS VENHA PARTIDO
+    #  SAFE RSS FETCH — evita erros quando YouTube bloqueia
     # ----------------------------------------------------------------
     def safe_fetch_rss():
         try:
-            r = requests.get(YT_RSS_URL, timeout=5)
-            if not r.text.startswith("<?xml"):
-                raise ValueError("RSS não é XML")
-            return r.text
-        except:
+            r = requests.get(YT_RSS_URL, timeout=6)
+            txt = r.text.strip()
+
+            # Se não começa por XML → YouTube devolveu HTML → inválido
+            if not txt.startswith("<?xml"):
+                raise ValueError("RSS não é XML válido")
+            return txt
+
+        except Exception as e:
+            print("RSS ERROR:", e)
             return None
 
     # ----------------------------------------------------------------
     def fetch_latest_videos():
         xml = safe_fetch_rss()
 
-        # ⚠️ SE O XML FOR INVÁLIDO → DEVOLVE VAZIO EM VEZ DE 500
         if xml is None:
             return {"videos": [], "live": None}
 
@@ -59,30 +78,35 @@ def create_app():
             return {"videos": videos, "live": live}
 
         except Exception as e:
-            print("ERRO PARSE RSS:", e)
+            print("PARSE RSS ERROR:", e)
             return {"videos": [], "live": None}
 
     # ----------------------------------------------------------------
     def fetch_channel_info():
-        # manter como antes — isto está estável
         try:
-            r = requests.get(YT_CHANNEL_URL, timeout=5)
+            r = requests.get(YT_CHANNEL_URL, timeout=6)
             html = r.text
 
             import re
-            title = re.search(r'"title":"(.*?)"', html)
-            avatar = re.search(r'"avatar":{"thumbnails":\[{"url":"(.*?)"', html)
-            subs = re.search(r'"subscriberCountText".*?"simpleText":"(.*?)"', html)
-            views = re.search(r'"viewCountText".*?"simpleText":"(.*?)"', html)
+
+            def regex(pattern):
+                m = re.search(pattern, html)
+                return m.group(1) if m else None
+
+            title = regex(r'"title":"(.*?)"') or "FulLshoT | Diogo Rodrigues"
+            avatar = regex(r'"avatar":{"thumbnails":\[{"url":"(.*?)"') or ""
+            subs = regex(r'"subscriberCountText".*?"simpleText":"(.*?)"') or "???"
+            views = regex(r'"viewCountText".*?"simpleText":"(.*?)"') or "???"
 
             return {
-                "title": title.group(1) if title else "FulLshoT | Diogo Rodrigues",
-                "avatar": avatar.group(1) if avatar else "",
-                "subs": subs.group(1) if subs else "???",
-                "views": views.group(1) if views else "???",
+                "title": title,
+                "avatar": avatar,
+                "subs": subs,
+                "views": views,
             }
 
-        except:
+        except Exception as e:
+            print("CHANNEL INFO ERROR:", e)
             return {
                 "title": "FulLshoT | Diogo Rodrigues",
                 "avatar": "",
@@ -90,6 +114,8 @@ def create_app():
                 "views": "???",
             }
 
+    # ----------------------------------------------------------------
+    # ROUTES
     # ----------------------------------------------------------------
     @app.route("/api/ping")
     def ping():
