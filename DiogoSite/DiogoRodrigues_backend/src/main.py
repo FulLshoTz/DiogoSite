@@ -4,43 +4,63 @@ import requests
 from flask import Flask, jsonify
 from flask_cors import CORS
 
-YOUTUBE_URL = "https://www.youtube.com/@FulLshoT/videos"
+# URL correta do canal
+YOUTUBE_URL = "https://www.youtube.com/@FulLshoT"
+
+# User-Agent real para evitar bloqueios do YouTube
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/120.0 Safari/537.36"
+    )
+}
+
 
 def create_app():
     app = Flask(__name__)
 
+    # CORS correto
     frontend = os.getenv("CORS_ORIGIN", "https://diogorodrigues.pt")
     CORS(app, resources={r"/api/*": {"origins": frontend}})
 
-    # ----------------------------------------------------------------
-    #  SCRAPER — usar o separador /videos (muito mais estável)
-    # ----------------------------------------------------------------
-    def fetch_videos():
+    # ------------------------------------------------------------
+    #  SCRAPER — extrair vídeos via HTML (seguro e rápido)
+    # ------------------------------------------------------------
+    def fetch_videos_from_html():
         try:
-            html = requests.get(YOUTUBE_URL, timeout=6).text
+            html = requests.get(YOUTUBE_URL, timeout=6, headers=HEADERS).text
 
-            # encontrar blocos videoRenderer completos
-            blocks = re.findall(r'"videoRenderer":\s*({.*?})\s*,\s*"trackingParams"', html)
+            # procurar blocos de vídeo
+            matches = re.findall(r'"videoRenderer":({.*?}})', html)
 
             videos = []
             live = None
 
-            for block in blocks:
-                # videoId
+            for block in matches:
                 vid = re.search(r'"videoId":"(.*?)"', block)
                 if not vid:
                     continue
+
                 video_id = vid.group(1)
 
-                # título
-                title_match = re.search(r'"title":\{"runs":\[\{"text":"(.*?)"\}\]', block)
+                title_match = re.search(
+                    r'"title":\{"runs":\[\{"text":"(.*?)"\}\]', block
+                )
                 title = title_match.group(1) if title_match else "Vídeo"
 
-                # LIVE detection
+                # ----------------------------------------------------
+                #   LIVE detection — TODAS as variantes do YouTube
+                # ----------------------------------------------------
+                BL = block.upper()
+
                 is_live = (
-                    '"style":"LIVE"' in block.upper()
-                    or '"label":"LIVE"' in block.upper()
-                    or '"BADGE_STYLE_TYPE_LIVE_NOW"' in block.upper()
+                    '"STYLE":"LIVE"' in BL
+                    or '"STYLE":"LIVE_NOW"' in BL
+                    or "LIVE NOW" in BL
+                    or "BADGE_STYLE_TYPE_LIVE_NOW" in BL
+                    or '"LABEL":"LIVE"' in BL
+                    or '"text":"LIVE"' in BL
                 )
 
                 if is_live and live is None:
@@ -54,12 +74,12 @@ def create_app():
             print("ERRO SCRAPER:", e)
             return {"videos": [], "live": None}
 
-    # ----------------------------------------------------------------
-    #  SCRAPER — info do canal
-    # ----------------------------------------------------------------
+    # ------------------------------------------------------------
+    #  INFO DO CANAL (avatar, subs, views)
+    # ------------------------------------------------------------
     def fetch_channel_info():
         try:
-            html = requests.get("https://www.youtube.com/@FulLshoT", timeout=5).text
+            html = requests.get(YOUTUBE_URL, timeout=6, headers=HEADERS).text
 
             title = re.search(r'"title":"(.*?)"', html)
             avatar = re.search(r'"avatar":{"thumbnails":\[\{"url":"(.*?)"', html)
@@ -70,7 +90,7 @@ def create_app():
                 "title": title.group(1) if title else "FulLshoT | Diogo Rodrigues",
                 "avatar": avatar.group(1) if avatar else "",
                 "subs": subs.group(1) if subs else "???",
-                "views": views.group(1) if views else "???"
+                "views": views.group(1) if views else "???",
             }
 
         except:
@@ -78,25 +98,26 @@ def create_app():
                 "title": "FulLshoT | Diogo Rodrigues",
                 "avatar": "",
                 "subs": "???",
-                "views": "???"
+                "views": "???",
             }
 
-    # ----------------------------------------------------------------
+    # ------------------------------------------------------------
     #  ROUTES
-    # ----------------------------------------------------------------
+    # ------------------------------------------------------------
+
     @app.route("/api/ping")
     def ping():
         return jsonify({"status": "ok"})
 
     @app.route("/api/latest-videos")
-    def api_latest():
-        data = fetch_videos()
+    def api_videos():
+        data = fetch_videos_from_html()
 
-        # fallback — se YouTube bloquear scraping
+        # fallback caso YouTube falhe
         if len(data["videos"]) == 0:
             data["videos"] = [
                 {"id": "akkgj63j5rg", "title": "PTracerz CUP 2025"},
-                {"id": "95r7yKBo-4w", "title": "GT3 vs ORT - Corrida resistência"},
+                {"id": "95r7yKBo-4w", "title": "GT3 VS ORT - Corrida resistência"},
                 {"id": "gupDgHpu3DA", "title": "Cacetada no Zurga"},
             ]
 
