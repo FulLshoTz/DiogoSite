@@ -1,129 +1,118 @@
 import os
-import json
+import re
+import requests
 from flask import Flask, jsonify
 from flask_cors import CORS
-import requests
-from dotenv import load_dotenv
 
-load_dotenv()
-
-YOUTUBE_CHANNEL_ID = "UCg0AiAvX8ZDbEzu1s6QUd9w"
-YT_RSS_URL = f"https://www.youtube.com/feeds/videos.xml?channel_id={YOUTUBE_CHANNEL_ID}"
-YT_CHANNEL_URL = "https://www.youtube.com/@FulLshoT"
-
+YOUTUBE_URL = "https://www.youtube.com/@FulLshoT"
 
 def create_app():
     app = Flask(__name__)
 
-    # ----------------------------------------------------------------
-    #  CORS FIX — suporta LISTAS vindas do Render sem falhar
-    # ----------------------------------------------------------------
-    cors_raw = os.getenv("CORS_ORIGIN", "[]")
+    frontend = os.getenv("CORS_ORIGIN", "https://diogorodrigues.pt")
+    CORS(app, resources={r"/api/*": {"origins": frontend}})
 
-    try:
-        # Se for lista JSON válida, usa
-        cors_origins = json.loads(cors_raw)
-    except:
-        # Se for string, separa por vírgulas
-        cors_origins = [o.strip() for o in cors_raw.split(",") if o.strip()]
-
-    if not cors_origins:
-        cors_origins = ["*"]  # fallback seguro
-
-    CORS(app, resources={r"/api/*": {"origins": cors_origins}})
-
-    # ----------------------------------------------------------------
-    #  SAFE RSS FETCH — evita erros quando YouTube bloqueia
-    # ----------------------------------------------------------------
-    def safe_fetch_rss():
+    # ------------------------------------------------------------
+    #  SCRAPER — extrai vídeos do HTML do canal
+    # ------------------------------------------------------------
+    def fetch_videos_from_html():
         try:
-            r = requests.get(YT_RSS_URL, timeout=6)
-            txt = r.text.strip()
+            html = requests.get(YOUTUBE_URL, timeout=5).text
 
-            # Se não começa por XML → YouTube devolveu HTML → inválido
-            if not txt.startswith("<?xml"):
-                raise ValueError("RSS não é XML válido")
-            return txt
-
-        except Exception as e:
-            print("RSS ERROR:", e)
-            return None
-
-    # ----------------------------------------------------------------
-    def fetch_latest_videos():
-        xml = safe_fetch_rss()
-
-        if xml is None:
-            return {"videos": [], "live": None}
-
-        try:
-            from xml.etree import ElementTree as ET
-            root = ET.fromstring(xml)
-            entries = root.findall("{http://www.w3.org/2005/Atom}entry")
+            # Procura objetos "videoRenderer"
+            matches = re.findall(r'"videoRenderer":({.*?}})', html)
 
             videos = []
             live = None
 
-            for e in entries:
-                vid = e.find("{http://www.youtube.com/xml/schemas/2015}videoId").text
-                title = e.find("{http://www.w3.org/2005/Atom}title").text
+            for block in matches:
+                # Extrair ID
+                vid_match = re.search(r'"videoId":"(.*?)"', block)
+                if not vid_match:
+                    continue
 
-                is_live = "LIVE" in title.upper() or "🔴" in title
+                video_id = vid_match.group(1)
+
+                # Extrair título
+                title_match = re.search(r'"title":\{"runs":\[\{"text":"(.*?)"\}\]', block)
+                title = title_match.group(1) if title_match else "Sem título"
+
+                # Detetar LIVE
+                is_live = '"style":"LIVE"' in block.upper() or 'LIVE"}' in block.upper()
 
                 if is_live and live is None:
-                    live = {"id": vid, "title": title}
+                    live = {"id": video_id, "title": title}
 
-                videos.append({"id": vid, "title": title})
+                videos.append({"id": video_id, "title": title})
 
             return {"videos": videos, "live": live}
 
         except Exception as e:
-            print("PARSE RSS ERROR:", e)
+            print("ERRO SCRAPER:", e)
             return {"videos": [], "live": None}
 
-    # ----------------------------------------------------------------
+    # ------------------------------------------------------------
+    #  SCRAPER — extrai info do canal (avatar + nome)
+    # ------------------------------------------------------------
     def fetch_channel_info():
         try:
-            r = requests.get(YT_CHANNEL_URL, timeout=6)
-            html = r.text
+            html = requests.get(YOUTUBE_URL, timeout=5).text
 
-            import re
+            # título
+            title = re.search(r'"title":"(.*?)"', html)
+            title = title.group(1) if title else "FulLshoT | Diogo Rodrigues"
 
-            def regex(pattern):
-                m = re.search(pattern, html)
-                return m.group(1) if m else None
+            # avatar
+            avatar = re.search(r'"avatar":{"thumbnails":\[\{"url":"(.*?)"', html)
+            avatar = avatar.group(1) if avatar else ""
 
-            title = regex(r'"title":"(.*?)"') or "FulLshoT | Diogo Rodrigues"
-            avatar = regex(r'"avatar":{"thumbnails":\[{"url":"(.*?)"') or ""
-            subs = regex(r'"subscriberCountText".*?"simpleText":"(.*?)"') or "???"
-            views = regex(r'"viewCountText".*?"simpleText":"(.*?)"') or "???"
+            # subs
+            subs = re.search(r'"subscriberCountText".*?"simpleText":"(.*?)"', html)
+            subs = subs.group(1) if subs else "???"
+
+            # views
+            views = re.search(r'"viewCountText".*?"simpleText":"(.*?)"', html)
+            views = views.group(1) if views else "???"
 
             return {
                 "title": title,
                 "avatar": avatar,
                 "subs": subs,
-                "views": views,
+                "views": views
             }
 
-        except Exception as e:
-            print("CHANNEL INFO ERROR:", e)
+        except:
             return {
                 "title": "FulLshoT | Diogo Rodrigues",
                 "avatar": "",
                 "subs": "???",
-                "views": "???",
+                "views": "???"
             }
 
-    # ----------------------------------------------------------------
-    # ROUTES
-    # ----------------------------------------------------------------
+    # ------------------------------------------------------------
+    #  ROTAS
+    # ------------------------------------------------------------
+
     @app.route("/api/ping")
     def ping():
         return jsonify({"status": "ok"})
 
     @app.route("/api/latest-videos")
-    def api_latest():
-        return jsonify(fetch_latest_videos())
+    def api_videos():
+        data = fetch_videos_from_html()
+
+        # fallback — nunca envia vazio
+        if len(data["videos"]) == 0:
+            data["videos"] = [
+                {"id": "akkgj63j5rg", "title": "Hotlap 1"},
+                {"id": "95r7yKBo-4w", "title": "Hotlap 2"},
+                {"id": "gupDgHpu3DA", "title": "Hotlap 3"},
+            ]
+
+        return jsonify({
+            "live": data["live"],
+            "videos": data["videos"][:15]  # devolve 15 para futuro
+        })
 
     @app.route("/api/channel")
     def api_channel():
