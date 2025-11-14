@@ -1,47 +1,83 @@
 import os
+import requests
+import xml.etree.ElementTree as ET
 from flask import Flask, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 
-# Carrega variáveis do .env em dev
 load_dotenv()
+
+CHANNEL_ID = "UCUAEYHXtNbnwHBaSqHSqJJA"
+CHANNEL_USERNAME = "FulLshoT"
 
 def create_app():
     app = Flask(__name__)
-    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "default_secret")
+    CORS(app, resources={r"/*": {"origins": "*"}})
 
-    # ----------------------------
-    #   CONFIGURAÇÃO DE CORS
-    # ----------------------------
-    cors_origin_raw = os.getenv("CORS_ORIGIN", "*")
+    # ------------------------------
+    #   LATEST VIDEOS (RSS)
+    # ------------------------------
+    @app.route("/api/latest-videos")
+    def latest_videos():
+        rss_url = f"https://www.youtube.com/feeds/videos.xml?channel_id={CHANNEL_ID}"
 
-    # Converte "a,b,c" numa lista ["a", "b", "c"]
-    cors_origin = [
-        origin.strip()
-        for origin in cors_origin_raw.split(",")
-        if origin.strip()
-    ]
+        try:
+            rss_data = requests.get(rss_url, timeout=5)
+            root = ET.fromstring(rss_data.text)
 
-    # Aplica CORS apenas às rotas /api/*
-    CORS(app, resources={r"/api/*": {"origins": cors_origin}}, supports_credentials=True)
+            ns = {"yt": "http://www.youtube.com/xml/schemas/2015", "media": "http://search.yahoo.com/mrss/"}
 
-    # ----------------------------
-    #  IMPORTAÇÃO DAS ROTAS
-    # ----------------------------
-    from src.youtube_routes import youtube_bp
-    app.register_blueprint(youtube_bp, url_prefix="/api/youtube")
+            videos = []
+            for entry in root.findall("entry"):
+                video_id = entry.find("yt:videoId", ns).text
+                title = entry.find("title").text
+                published = entry.find("published").text
+                thumbnail = entry.find("media:group/media:thumbnail", ns).attrib["url"]
 
-    # ----------------------------
-    #   ROTA PARA TESTAR BACKEND
-    # ----------------------------
+                videos.append({
+                    "videoId": video_id,
+                    "title": title,
+                    "published": published,
+                    "thumbnail": thumbnail
+                })
+
+            return jsonify({"status": "ok", "videos": videos})
+
+        except Exception as e:
+            return jsonify({"status": "error", "message": str(e)}), 500
+
+    # ------------------------------
+    #   LIVE CHECK
+    # ------------------------------
+    @app.route("/api/live")
+    def live_check():
+        live_url = f"https://www.youtube.com/@{CHANNEL_USERNAME}/live"
+
+        try:
+            # follow redirects = True → YouTube envia para /watch?v=XXXX se estiver live
+            response = requests.get(live_url, allow_redirects=True, timeout=5)
+
+            final_url = response.url
+
+            if "watch?v=" in final_url:
+                video_id = final_url.split("watch?v=")[1].split("&")[0]
+                return jsonify({"live": True, "videoId": video_id})
+
+            return jsonify({"live": False})
+
+        except Exception as e:
+            return jsonify({"live": False, "error": str(e)})
+
+    # ------------------------------
+    #   PING
+    # ------------------------------
     @app.route("/api/ping")
     def ping():
-        return jsonify({"status": "ok", "message": "backend ativo"})
+        return jsonify({"status": "ok"})
 
     return app
 
 
-# Criar app Flask
 app = create_app()
 
 if __name__ == "__main__":
