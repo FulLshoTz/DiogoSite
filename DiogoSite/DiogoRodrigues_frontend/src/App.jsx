@@ -9,16 +9,16 @@ import Sidebar from "./components/Sidebar";
 import Background from "./components/Background";
 
 function App() {
-  // 🔁 Ping automático para manter backend acordado
+  // 🔁 Mantém backend acordado (Render FREE)
   useEffect(() => {
     const ping = () => {
-      fetch("https://diogorodrigues-backend.onrender.com/")
+      fetch("https://diogorodrigues-backend.onrender.com/api/ping")
         .then(() => console.log("Ping backend ok"))
         .catch(() => console.log("Backend ainda a acordar..."));
     };
 
-    ping(); // logo ao abrir o site
-    const interval = setInterval(ping, 30000);
+    ping(); // ping ao abrir
+    const interval = setInterval(ping, 30000); // a cada 30s
     return () => clearInterval(interval);
   }, []);
 
@@ -27,7 +27,7 @@ function App() {
       {/* Fundo animado de fibra de carbono */}
       <Background />
 
-      {/* Estrutura principal do site */}
+      {/* Estrutura principal */}
       <Router>
         <div className="flex min-h-screen bg-black text-white">
           <Sidebar />
