@@ -4,10 +4,8 @@ import requests
 from flask import Flask, jsonify
 from flask_cors import CORS
 
-# URL correta do canal
 YOUTUBE_URL = "https://www.youtube.com/@FulLshoT"
 
-# User-Agent real para evitar bloqueios do YouTube
 HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -20,18 +18,14 @@ HEADERS = {
 def create_app():
     app = Flask(__name__)
 
-    # CORS correto
     frontend = os.getenv("CORS_ORIGIN", "https://diogorodrigues.pt")
     CORS(app, resources={r"/api/*": {"origins": frontend}})
 
-    # ------------------------------------------------------------
-    #  SCRAPER — extrair vídeos via HTML (seguro e rápido)
-    # ------------------------------------------------------------
+    # ----------------- SCRAPER VÍDEOS -----------------
     def fetch_videos_from_html():
         try:
             html = requests.get(YOUTUBE_URL, timeout=6, headers=HEADERS).text
 
-            # procurar blocos de vídeo
             matches = re.findall(r'"videoRenderer":({.*?}})', html)
 
             videos = []
@@ -49,9 +43,6 @@ def create_app():
                 )
                 title = title_match.group(1) if title_match else "Vídeo"
 
-                # ----------------------------------------------------
-                #   LIVE detection — TODAS as variantes do YouTube
-                # ----------------------------------------------------
                 BL = block.upper()
 
                 is_live = (
@@ -74,36 +65,31 @@ def create_app():
             print("ERRO SCRAPER:", e)
             return {"videos": [], "live": None}
 
-    # ------------------------------------------------------------
-    #  INFO DO CANAL (avatar, subs, views)
-    # ------------------------------------------------------------
+    # ----------------- INFO CANAL -----------------
     def fetch_channel_info():
         try:
             html = requests.get(YOUTUBE_URL, timeout=6, headers=HEADERS).text
 
-            title = re.search(r'"title":"(.*?)"', html)
             avatar = re.search(r'"avatar":{"thumbnails":\[\{"url":"(.*?)"', html)
-            subs = re.search(r'"subscriberCountText".*?"simpleText":"(.*?)"', html)
-            views = re.search(r'"viewCountText".*?"simpleText":"(.*?)"', html)
 
             return {
-                "title": title.group(1) if title else "FulLshoT | Diogo Rodrigues",
+                # força o nome certo, não queremos "Home"
+                "title": "Diogo Rodrigues",
                 "avatar": avatar.group(1) if avatar else "",
-                "subs": subs.group(1) if subs else "???",
-                "views": views.group(1) if views else "???",
+                # já não usamos estes no frontend, mas ficam aqui
+                "subs": "",
+                "views": "",
             }
 
-        except:
+        except Exception:
             return {
-                "title": "FulLshoT | Diogo Rodrigues",
+                "title": "Diogo Rodrigues",
                 "avatar": "",
-                "subs": "???",
-                "views": "???",
+                "subs": "",
+                "views": "",
             }
 
-    # ------------------------------------------------------------
-    #  ROUTES
-    # ------------------------------------------------------------
+    # ----------------- ROUTES -----------------
 
     @app.route("/api/ping")
     def ping():
@@ -113,7 +99,6 @@ def create_app():
     def api_videos():
         data = fetch_videos_from_html()
 
-        # fallback caso YouTube falhe
         if len(data["videos"]) == 0:
             data["videos"] = [
                 {"id": "akkgj63j5rg", "title": "PTracerz CUP 2025"},
@@ -123,7 +108,7 @@ def create_app():
 
         return jsonify({
             "live": data["live"],
-            "videos": data["videos"][:15]
+            "videos": data["videos"][:15],
         })
 
     @app.route("/api/channel")
