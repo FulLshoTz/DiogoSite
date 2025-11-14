@@ -2,17 +2,12 @@ import React, { useState, useEffect } from "react";
 import ChannelHeader from "../components/ChannelHeader";
 
 export default function YoutubeSection() {
-  // placeholders locais
-  const [videos, setVideos] = useState([
-    { id: "akkgj63j5rg", title: "", publishedAt: "" },
-    { id: "95r7yKBo-4w", title: "", publishedAt: "" },
-    { id: "gupDgHpu3DA", title: "", publishedAt: "" },
-  ]);
-
+  const [videos, setVideos] = useState([]);
   const [live, setLive] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // função utilitária para formatar datas
+  const BACKEND = "https://diogorodrigues-backend.onrender.com";
+
   function formatDate(dateStr) {
     if (!dateStr) return "";
     try {
@@ -27,40 +22,52 @@ export default function YoutubeSection() {
   }
 
   useEffect(() => {
-    async function fetchData() {
+    async function loadData() {
       try {
-        const res = await fetch("https://diogorodrigues-backend.onrender.com/api/youtube/latest-videos");
-        const data = await res.json();
+        // 👉 Buscar vídeos
+        const vidRes = await fetch(`${BACKEND}/api/latest-videos`);
+        const vidJson = await vidRes.json();
 
-        console.log("📦 Data recebida:", data);
+        if (vidJson?.status === "ok") {
+          const mappedVideos = vidJson.videos.map(v => ({
+            id: v.videoId,
+            title: v.title,
+            publishedAt: v.published,
+            thumbnail: v.thumbnail,
+          }));
+          setVideos(mappedVideos.slice(0, 3));
+        }
 
-        const videosFromApi = data?.videos || data?.latestVideos || [];
-        const liveId = data?.live?.id || data?.liveId || null;
+        // 👉 Buscar live
+        const liveRes = await fetch(`${BACKEND}/api/live`);
+        const liveJson = await liveRes.json();
 
-        if (liveId) {
+        if (liveJson.live === true && liveJson.videoId) {
           setLive({
-            id: liveId,
-            title: data?.live?.title || "🔴 Live no ar",
+            id: liveJson.videoId,
+            title: "🔴 Live no ar",
           });
-          setVideos([]);
-        } else if (Array.isArray(videosFromApi) && videosFromApi.length > 0) {
-          setVideos(videosFromApi.slice(0, 3));
+          setVideos([]); // esconde vídeos quando há live
+        } else {
           setLive(null);
         }
+
       } catch (err) {
-        console.warn("⚠️ Erro ao buscar vídeos:", err);
-      } finally {
-        setLoading(false);
+        console.warn("⚠️ Erro ao carregar secção YouTube:", err);
       }
+
+      setLoading(false);
     }
 
-    fetchData();
+    loadData();
   }, []);
 
   return (
     <>
       <ChannelHeader />
+
       <section className="max-w-7xl mx-auto text-white px-4 py-6 mt-2">
+
         {/* Cabeçalho da secção */}
         <div className="flex items-center gap-3 mb-6">
           <svg className="w-6 h-6 text-red-600" viewBox="0 0 576 512" fill="currentColor">
@@ -70,9 +77,9 @@ export default function YoutubeSection() {
           <div className="flex-1 h-[2px] bg-red-600"></div>
         </div>
 
-        {loading && <p className="text-gray-400 mb-6">A carregar do YouTube…</p>}
+        {loading && <p className="text-gray-400 mb-6">A carregar…</p>}
 
-        {/* Se estiver live → mostra a live */}
+        {/* LIVE */}
         {live ? (
           <div className="rounded-xl overflow-hidden border border-red-700/40 shadow-lg">
             <div className="aspect-video">
@@ -84,14 +91,16 @@ export default function YoutubeSection() {
                 allowFullScreen
               ></iframe>
             </div>
+
             <div className="p-4 text-left">
               <p className="font-semibold">{live.title}</p>
               <p className="text-sm text-red-400">🔴 Em direto</p>
             </div>
           </div>
         ) : (
-          // Caso contrário → mostra os 3 vídeos
+          /* VÍDEOS */
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+
             {videos.map((v) => (
               <div
                 key={v.id}
@@ -101,22 +110,19 @@ export default function YoutubeSection() {
                   <iframe
                     className="w-full h-full"
                     src={`https://www.youtube.com/embed/${v.id}?rel=0&modestbranding=1&playsinline=1`}
-                    title={v.title || "Vídeo YouTube"}
+                    title={v.title}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                   ></iframe>
                 </div>
-                {/* Só mostra título/data se vierem da API */}
-                {v.title && (
-                  <div className="p-4 text-left">
-                    <p className="font-semibold mb-1">{v.title}</p>
-                    {v.publishedAt && (
-                      <p className="text-sm text-gray-400">{formatDate(v.publishedAt)}</p>
-                    )}
-                  </div>
-                )}
+
+                <div className="p-4 text-left">
+                  <p className="font-semibold mb-1">{v.title}</p>
+                  <p className="text-sm text-gray-400">{formatDate(v.publishedAt)}</p>
+                </div>
               </div>
             ))}
+
           </div>
         )}
       </section>
