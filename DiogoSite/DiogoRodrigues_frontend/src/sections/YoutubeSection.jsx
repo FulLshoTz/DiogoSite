@@ -20,19 +20,11 @@ export default function YoutubeSection() {
         const res = await fetch(`${API_BASE}/api/latest-videos`);
         const data = await res.json();
 
-        console.log("📦 Latest videos:", data);
-
-        if (!data || !Array.isArray(data.videos)) {
-          setLoading(false);
-          return;
-        }
-
         if (data.live) {
           setLive(data.live);
           setVideos([]);
         } else if (data.videos.length > 0) {
           setVideos(data.videos.slice(0, 3));
-          setLive(null);
         }
       } catch (err) {
         console.error("Erro ao buscar vídeos:", err);
@@ -52,12 +44,8 @@ export default function YoutubeSection() {
 
       <section className="max-w-7xl mx-auto text-white px-4 py-6 mt-2">
         <div className="flex items-center gap-3 mb-6">
-          <svg
-            className="w-6 h-6 text-red-600"
-            viewBox="0 0 576 512"
-            fill="currentColor"
-          >
-            <path d="M549.7 124.1c-6.3-23.6-24.8-42.3-48.3-48.6C458.8 64 288 64 288 64S117.2 64 74.6 75.5C51.1 81.8 32.6 100.4 26.3 124c-11.4 42.8-11.4 132-11.4 132s0 89.2 11.4 132c6.3 23.6 24.8 42.3 48.3 48.6C117.2 448 288 448 288 448s170.8 0 213.4-11.4c23.5-6.3 42-25 48.3-48.6 11.4-42.8 11.4-132 11.4-132s0-89.2-11.4-132zM232.1 337.6V174.4l142.7 81.6-142.7 81.6z" />
+          <svg className="w-6 h-6 text-red-600" viewBox="0 0 576 512" fill="currentColor">
+            <path d="M549.7 124.1c-6.3-23.6-24.8-42.3-48.3-48.6C458.8 64 288 64 288 64S117.2 64 74.6 75.5C51.1 81.8 32.6 100.4 26.3 124c-11.4 42.8-11.4 132-11.4 132s0 89.2 11.4 132c6.3 23.6 24.8 42.3 48.3 48.6C117.2 448 288 448 288 448s170.8 0 213.4-11.4c23.5-6.3 42-25 48.3-48.6 11.4-42.8 11.4-132 11.4-132s0-89.2-11.4-132zM232.1 337.6V174.4l142.7 81.6-142.7 81.6z"/>
           </svg>
           <h3 className="text-2xl font-bold tracking-wide">{sectionTitle}</h3>
           <div className="flex-1 h-[2px] bg-red-600"></div>
@@ -65,44 +53,36 @@ export default function YoutubeSection() {
 
         {loading && <p>A carregar…</p>}
 
+        {/* LIVE BLOCK GRANDE */}
         {live ? (
-          <div className="max-w-5xl mx-auto rounded-2xl overflow-hidden border border-red-700/40 shadow-lg bg-black/40">
+          <div className="max-w-5xl mx-auto rounded-2xl overflow-hidden border border-red-700/40 shadow-xl bg-black/40">
             <div className="aspect-video">
               <iframe
                 className="w-full h-full"
                 src={`https://www.youtube.com/embed/${live.id}?autoplay=1&mute=1`}
-                title={live.title}
-                allow="autoplay; encrypted-media; picture-in-picture"
+                allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
                 allowFullScreen
               />
             </div>
-            <div className="p-4 flex items-center justify-between">
-              <div>
-                <p className="font-semibold">{live.title}</p>
-                <p className="text-sm text-red-400 mt-1">🔴 Ao vivo</p>
-              </div>
+            <div className="p-4">
+              <p className="font-semibold text-lg">{live.title}</p>
+              <p className="text-sm text-red-400">🔴 Ao vivo</p>
             </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
             {videos.map((v) => (
-              <div
-                key={v.id}
-                className="bg-neutral-900 rounded-xl overflow-hidden border border-red-700/30"
-              >
+              <div key={v.id} className="bg-neutral-900 rounded-xl overflow-hidden border border-red-700/30">
                 <div className="aspect-video">
                   <iframe
                     className="w-full h-full"
                     src={`https://www.youtube.com/embed/${v.id}`}
-                    title={v.title}
                     allowFullScreen
                   />
                 </div>
-                {v.title && (
-                  <div className="p-4">
-                    <p className="font-semibold">{v.title}</p>
-                  </div>
-                )}
+                <div className="p-4">
+                  <p className="font-semibold">{v.title}</p>
+                </div>
               </div>
             ))}
           </div>
