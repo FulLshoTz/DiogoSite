@@ -4,40 +4,44 @@ import requests
 from flask import Flask, jsonify
 from flask_cors import CORS
 
-YOUTUBE_URL = "https://www.youtube.com/@FulLshoT"
+YOUTUBE_URL = "https://www.youtube.com/@FulLshoT/videos"
 
 def create_app():
     app = Flask(__name__)
 
-    # CORS correto
     frontend = os.getenv("CORS_ORIGIN", "https://diogorodrigues.pt")
     CORS(app, resources={r"/api/*": {"origins": frontend}})
 
-    # ------------------------------------------------------------
-    #  SCRAPER — extrair vídeos via HTML
-    # ------------------------------------------------------------
-    def fetch_videos_from_html():
+    # ----------------------------------------------------------------
+    #  SCRAPER — usar o separador /videos (muito mais estável)
+    # ----------------------------------------------------------------
+    def fetch_videos():
         try:
-            html = requests.get(YOUTUBE_URL, timeout=5).text
+            html = requests.get(YOUTUBE_URL, timeout=6).text
 
-            # procurar videorenderers
-            matches = re.findall(r'"videoRenderer":({.*?}})', html)
+            # encontrar blocos videoRenderer completos
+            blocks = re.findall(r'"videoRenderer":\s*({.*?})\s*,\s*"trackingParams"', html)
 
             videos = []
             live = None
 
-            for block in matches:
+            for block in blocks:
+                # videoId
                 vid = re.search(r'"videoId":"(.*?)"', block)
                 if not vid:
                     continue
-
                 video_id = vid.group(1)
 
+                # título
                 title_match = re.search(r'"title":\{"runs":\[\{"text":"(.*?)"\}\]', block)
                 title = title_match.group(1) if title_match else "Vídeo"
 
                 # LIVE detection
-                is_live = '"style":"LIVE"' in block.upper() or 'LIVE"}' in block.upper()
+                is_live = (
+                    '"style":"LIVE"' in block.upper()
+                    or '"label":"LIVE"' in block.upper()
+                    or '"BADGE_STYLE_TYPE_LIVE_NOW"' in block.upper()
+                )
 
                 if is_live and live is None:
                     live = {"id": video_id, "title": title}
@@ -50,12 +54,12 @@ def create_app():
             print("ERRO SCRAPER:", e)
             return {"videos": [], "live": None}
 
-    # ------------------------------------------------------------
+    # ----------------------------------------------------------------
     #  SCRAPER — info do canal
-    # ------------------------------------------------------------
+    # ----------------------------------------------------------------
     def fetch_channel_info():
         try:
-            html = requests.get(YOUTUBE_URL, timeout=5).text
+            html = requests.get("https://www.youtube.com/@FulLshoT", timeout=5).text
 
             title = re.search(r'"title":"(.*?)"', html)
             avatar = re.search(r'"avatar":{"thumbnails":\[\{"url":"(.*?)"', html)
@@ -77,23 +81,22 @@ def create_app():
                 "views": "???"
             }
 
-    # ------------------------------------------------------------
+    # ----------------------------------------------------------------
     #  ROUTES
-    # ------------------------------------------------------------
-
+    # ----------------------------------------------------------------
     @app.route("/api/ping")
     def ping():
         return jsonify({"status": "ok"})
 
     @app.route("/api/latest-videos")
-    def api_videos():
-        data = fetch_videos_from_html()
+    def api_latest():
+        data = fetch_videos()
 
-        # fallback quando YouTube falha
+        # fallback — se YouTube bloquear scraping
         if len(data["videos"]) == 0:
             data["videos"] = [
                 {"id": "akkgj63j5rg", "title": "PTracerz CUP 2025"},
-                {"id": "95r7yKBo-4w", "title": "GT3 VS ORT - Corrida resistência"},
+                {"id": "95r7yKBo-4w", "title": "GT3 vs ORT - Corrida resistência"},
                 {"id": "gupDgHpu3DA", "title": "Cacetada no Zurga"},
             ]
 
