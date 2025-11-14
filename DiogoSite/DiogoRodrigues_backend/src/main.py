@@ -9,35 +9,34 @@ YOUTUBE_URL = "https://www.youtube.com/@FulLshoT"
 def create_app():
     app = Flask(__name__)
 
+    # CORS correto
     frontend = os.getenv("CORS_ORIGIN", "https://diogorodrigues.pt")
     CORS(app, resources={r"/api/*": {"origins": frontend}})
 
     # ------------------------------------------------------------
-    #  SCRAPER — extrai vídeos do HTML do canal
+    #  SCRAPER — extrair vídeos via HTML
     # ------------------------------------------------------------
     def fetch_videos_from_html():
         try:
             html = requests.get(YOUTUBE_URL, timeout=5).text
 
-            # Procura objetos "videoRenderer"
+            # procurar videorenderers
             matches = re.findall(r'"videoRenderer":({.*?}})', html)
 
             videos = []
             live = None
 
             for block in matches:
-                # Extrair ID
-                vid_match = re.search(r'"videoId":"(.*?)"', block)
-                if not vid_match:
+                vid = re.search(r'"videoId":"(.*?)"', block)
+                if not vid:
                     continue
 
-                video_id = vid_match.group(1)
+                video_id = vid.group(1)
 
-                # Extrair título
                 title_match = re.search(r'"title":\{"runs":\[\{"text":"(.*?)"\}\]', block)
-                title = title_match.group(1) if title_match else "Sem título"
+                title = title_match.group(1) if title_match else "Vídeo"
 
-                # Detetar LIVE
+                # LIVE detection
                 is_live = '"style":"LIVE"' in block.upper() or 'LIVE"}' in block.upper()
 
                 if is_live and live is None:
@@ -52,33 +51,22 @@ def create_app():
             return {"videos": [], "live": None}
 
     # ------------------------------------------------------------
-    #  SCRAPER — extrai info do canal (avatar + nome)
+    #  SCRAPER — info do canal
     # ------------------------------------------------------------
     def fetch_channel_info():
         try:
             html = requests.get(YOUTUBE_URL, timeout=5).text
 
-            # título
             title = re.search(r'"title":"(.*?)"', html)
-            title = title.group(1) if title else "FulLshoT | Diogo Rodrigues"
-
-            # avatar
             avatar = re.search(r'"avatar":{"thumbnails":\[\{"url":"(.*?)"', html)
-            avatar = avatar.group(1) if avatar else ""
-
-            # subs
             subs = re.search(r'"subscriberCountText".*?"simpleText":"(.*?)"', html)
-            subs = subs.group(1) if subs else "???"
-
-            # views
             views = re.search(r'"viewCountText".*?"simpleText":"(.*?)"', html)
-            views = views.group(1) if views else "???"
 
             return {
-                "title": title,
-                "avatar": avatar,
-                "subs": subs,
-                "views": views
+                "title": title.group(1) if title else "FulLshoT | Diogo Rodrigues",
+                "avatar": avatar.group(1) if avatar else "",
+                "subs": subs.group(1) if subs else "???",
+                "views": views.group(1) if views else "???"
             }
 
         except:
@@ -90,7 +78,7 @@ def create_app():
             }
 
     # ------------------------------------------------------------
-    #  ROTAS
+    #  ROUTES
     # ------------------------------------------------------------
 
     @app.route("/api/ping")
@@ -101,17 +89,17 @@ def create_app():
     def api_videos():
         data = fetch_videos_from_html()
 
-        # fallback — nunca envia vazio
+        # fallback quando YouTube falha
         if len(data["videos"]) == 0:
             data["videos"] = [
-                {"id": "akkgj63j5rg", "title": "Hotlap 1"},
-                {"id": "95r7yKBo-4w", "title": "Hotlap 2"},
-                {"id": "gupDgHpu3DA", "title": "Hotlap 3"},
+                {"id": "akkgj63j5rg", "title": "PTracerz CUP 2025"},
+                {"id": "95r7yKBo-4w", "title": "GT3 VS ORT - Corrida resistência"},
+                {"id": "gupDgHpu3DA", "title": "Cacetada no Zurga"},
             ]
 
         return jsonify({
             "live": data["live"],
-            "videos": data["videos"][:15]  # devolve 15 para futuro
+            "videos": data["videos"][:15]
         })
 
     @app.route("/api/channel")
