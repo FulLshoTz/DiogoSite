@@ -1,21 +1,20 @@
 import React, { useEffect, useState } from "react";
 
 export default function ChannelHeader() {
-  const [channel, setChannel] = useState(null);
+  const [stats, setStats] = useState(null);
   const [isLive, setIsLive] = useState(false);
 
   useEffect(() => {
     async function load() {
       try {
-        const chRes = await fetch("https://diogorodrigues-backend.onrender.com/api/channel");
-        const vidRes = await fetch("https://diogorodrigues-backend.onrender.com/api/latest-videos");
+        // Stats reais
+        const s = await fetch("https://diogorodrigues-backend.onrender.com/api/channel-stats").then(r => r.json());
 
+        // Live status
+        const v = await fetch("https://diogorodrigues-backend.onrender.com/api/latest-videos").then(r => r.json());
+        setIsLive(!!v.live);
 
-        const ch = await chRes.json();
-        const vids = await vidRes.json();
-
-        setChannel(ch);
-        setIsLive(!!vids.live);
+        setStats(s);
       } catch (err) {
         console.error("Erro no header:", err);
       }
@@ -24,61 +23,64 @@ export default function ChannelHeader() {
     load();
   }, []);
 
-  const name = "FulLshoT | Diogo Rodrigues";
-
   return (
-    <header className="bg-red-900/20 border-b border-red-900/40">
-      <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+    <header className="w-full bg-black/40 border-b border-red-800/40 py-6 backdrop-blur-md">
+      <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">
 
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full overflow-hidden bg-black/60 border border-red-700/60">
-            {channel?.avatar ? (
-              <img src={channel.avatar} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-red-300">
-                DR
-              </div>
-            )}
-          </div>
+        {/* BLOCO ESQUERDO */}
+        <div className="flex items-center gap-6">
 
+          {/* LOGO GRANDE */}
+          <img
+            src="/logo.png"
+            className="w-20 h-20 rounded-xl border border-red-700 shadow-lg"
+            alt="Logo"
+          />
+
+          {/* INFO */}
           <div>
-            <h1 className="text-xl font-bold text-white">{name}</h1>
-            <p className="text-sm text-red-200/80">
-              {channel?.subs || "???"} subs · {channel?.views || "???"}
-            </p>
+            <h1 className="text-3xl font-bold text-white">
+              FulLshoT <span className="text-red-400">|</span> Diogo Rodrigues
+            </h1>
 
-            <div className="flex items-center gap-2 mt-1 text-sm">
-              <span
-                className={`inline-block w-2.5 h-2.5 rounded-full ${
-                  isLive ? "bg-red-500" : "bg-neutral-500"
-                }`}
-              />
-              <span className={isLive ? "text-red-400" : "text-neutral-400"}>
-                {isLive ? "Ao vivo" : "Offline"}
+            <div className="flex items-center gap-4 text-sm text-red-200/80 mt-1">
+              <span>{stats?.subs || "???"} subs</span>
+              <span>·</span>
+              <span>{stats?.views || "???"} views</span>
+              <span>·</span>
+              <span>{stats?.videos || "???"} vídeos</span>
+            </div>
+
+            {/* ESTADO */}
+            <div className="flex items-center gap-2 mt-2 text-sm">
+              <span className={`w-3 h-3 rounded-full ${isLive ? "bg-red-500" : "bg-neutral-500"}`} />
+              <span className={`${isLive ? "text-red-400" : "text-neutral-400"}`}>
+                {isLive ? "🔴 Online" : "Offline"}
               </span>
             </div>
           </div>
         </div>
 
+        {/* BOTÕES */}
         <div className="flex gap-3">
           <a
             href="https://www.youtube.com/@FulLshoT"
             target="_blank"
             rel="noreferrer"
-            className="px-4 py-2 rounded-full bg-red-600 hover:bg-red-700 text-sm font-semibold text-white"
+            className="px-5 py-2 rounded-full bg-red-600 hover:bg-red-700 text-sm font-semibold text-white shadow-md"
           >
             YouTube
           </a>
+
           <a
             href="https://www.instagram.com"
             target="_blank"
             rel="noreferrer"
-            className="px-4 py-2 rounded-full bg-pink-600 hover:bg-pink-700 text-sm font-semibold text-white"
+            className="px-5 py-2 rounded-full bg-pink-600 hover:bg-pink-700 text-sm font-semibold text-white shadow-md"
           >
             Instagram
           </a>
         </div>
-
       </div>
     </header>
   );
