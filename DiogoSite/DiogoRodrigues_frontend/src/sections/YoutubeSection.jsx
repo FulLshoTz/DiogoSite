@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import ChannelHeader from "../components/ChannelHeader";
 
-const API_BASE = "https://diogorodrigues-backend.onrender.com";
-
 export default function YoutubeSection() {
   const fallbackVideos = [
     { id: "akkgj63j5rg", title: "PTracerz CUP 2025" },
