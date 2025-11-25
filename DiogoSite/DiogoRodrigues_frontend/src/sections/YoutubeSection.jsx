@@ -17,7 +17,7 @@ export default function YoutubeSection() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`${API_BASE}/api/latest-videos`);
+       const res = await fetch(`/api/latest-videos`);
         const data = await res.json();
 
         if (data.live) {
