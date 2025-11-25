@@ -3,5 +3,12 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
-  base: "./",
+  server: {
+    proxy: {
+      "/api": {
+        target: "https://diogorodrigues-backend.onrender.com",
+        changeOrigin: true,
+      }
+    }
+  }
 });
