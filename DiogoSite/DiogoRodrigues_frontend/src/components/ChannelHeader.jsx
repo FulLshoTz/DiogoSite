@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 
-const API_BASE = "https://diogorodrigues-backend.onrender.com";
-
 export default function ChannelHeader() {
   const [channel, setChannel] = useState(null);
   const [isLive, setIsLive] = useState(false);
@@ -9,8 +7,8 @@ export default function ChannelHeader() {
   useEffect(() => {
     async function load() {
       try {
-        const chRes = await fetch(`${API_BASE}/api/channel`);
-        const vidRes = await fetch(`${API_BASE}/api/latest-videos`);
+        const chRes = await fetch(`/api/channel`);
+        const vidRes = await fetch(`/api/latest-videos`);
 
         const ch = await chRes.json();
         const vids = await vidRes.json();
@@ -31,10 +29,7 @@ export default function ChannelHeader() {
     <header className="bg-red-900/20 border-b border-red-900/40">
       <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
 
-        {/* Avatar + Nome + Info */}
         <div className="flex items-center gap-4">
-
-          {/* AVATAR */}
           <div className="w-16 h-16 rounded-full overflow-hidden bg-black/60 border border-red-700/60">
             {channel?.avatar ? (
               <img src={channel.avatar} className="w-full h-full object-cover" />
@@ -45,10 +40,8 @@ export default function ChannelHeader() {
             )}
           </div>
 
-          {/* NOME + STATS */}
           <div>
             <h1 className="text-xl font-bold text-white">{name}</h1>
-
             <p className="text-sm text-red-200/80">
               {channel?.subs || "???"} subs · {channel?.views || "???"}
             </p>
@@ -66,7 +59,6 @@ export default function ChannelHeader() {
           </div>
         </div>
 
-        {/* BOTÕES */}
         <div className="flex gap-3">
           <a
             href="https://www.youtube.com/@FulLshoT"
@@ -85,6 +77,7 @@ export default function ChannelHeader() {
             Instagram
           </a>
         </div>
+
       </div>
     </header>
   );
