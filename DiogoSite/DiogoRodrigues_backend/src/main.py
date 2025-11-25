@@ -1,43 +1,83 @@
 import os
+import time
 import requests
 from flask import Flask, jsonify
 from flask_cors import CORS
-import xml.etree.ElementTree as ET
+
+# cache em memória (RAM do Render)
+CACHE_DURATION = 15 * 60  # 15 minutos
+cache_timestamp = 0
+cache_data = None
 
 
 CHANNEL_ID = "UCfg5QnFApnh0RXZlZFzvLiQ"
-RSS_URL = f"https://www.youtube.com/feeds/videos.xml?channel_id={CHANNEL_ID}"
+YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
+
+SEARCH_URL = (
+    "https://www.googleapis.com/youtube/v3/search"
+    "?part=snippet"
+    "&channelId={channel}"
+    "&maxResults=15"
+    "&order=date"
+    "&type=video"
+    "&key={key}"
+)
 
 
-def get_videos_from_rss():
+def fetch_youtube_api():
+    """Chama YouTube API (1 vez a cada 15 min)"""
+    global cache_data, cache_timestamp
+
+    now = time.time()
+
+    # usar cache se ainda é válida
+    if cache_data and (now - cache_timestamp) < CACHE_DURATION:
+        return cache_data
+
+    # criar URL
+    url = SEARCH_URL.format(channel=CHANNEL_ID, key=YOUTUBE_API_KEY)
+
     try:
-        resp = requests.get(RSS_URL, timeout=10)
-        if resp.status_code != 200:
-            return None, []
+        response = requests.get(url, timeout=10)
+        data = response.json()
 
-        xml = resp.text
-        root = ET.fromstring(xml)
-
-        ns = {"yt": "http://www.youtube.com/xml/schemas/2015", "media": "http://search.yahoo.com/mrss/"}
+        # erro da API, evita crash
+        if "items" not in data:
+            raise Exception("YouTube API error")
 
         videos = []
-        live = None
+        live_video = None
 
-        for entry in root.findall("entry"):
-            video_id = entry.find("yt:videoId", ns).text
-            title = entry.find("title").text
+        for item in data["items"]:
+            video_id = item["id"]["videoId"]
+            title = item["snippet"]["title"]
 
-            # detectar live (YouTube marca <yt:liveBroadcast>live</yt:liveBroadcast>)
-            live_tag = entry.find("yt:liveBroadcast", ns)
-            if live_tag is not None and live_tag.text == "live":
-                live = {"id": video_id, "title": title}
+            # live detection
+            if item["snippet"].get("liveBroadcastContent") == "live":
+                live_video = {"id": video_id, "title": title}
 
             videos.append({"id": video_id, "title": title})
 
-        return live, videos
+        result = {"live": live_video, "videos": videos}
 
-    except Exception:
-        return None, []
+        # guardar em cache
+        cache_data = result
+        cache_timestamp = now
+
+        return result
+
+    except Exception as e:
+        print("Erro YouTube API:", e)
+
+        # fallback se der erro
+        return {
+            "live": None,
+            "videos": [
+                {"id": "akkgj63j5rg", "title": "PTracerz CUP 2025"},
+                {"id": "95r7yKBo-4w", "title": "GT3 VS ORT - Corrida Resistência"},
+                {"id": "gupDgHpu3DA", "title": "Cacetada no Zurga"},
+            ],
+        }
 
 
 def create_app():
@@ -52,23 +92,14 @@ def create_app():
 
     @app.route("/api/latest-videos")
     def latest_videos():
-        live, videos = get_videos_from_rss()
-
-        if not videos:
-            fallback = [
-                {"id": "akkgj63j5rg", "title": "PTracerz CUP 2025"},
-                {"id": "95r7yKBo-4w", "title": "GT3 VS ORT - Corrida Resistência"},
-                {"id": "gupDgHpu3DA", "title": "Cacetada no Zurga"}
-            ]
-            return jsonify({"live": None, "videos": fallback})
-
-        return jsonify({"live": live, "videos": videos[:15]})
+        data = fetch_youtube_api()
+        return jsonify(data)
 
     @app.route("/api/channel")
     def channel():
         return jsonify({
             "title": "FulLshoT | Diogo Rodrigues",
-            "avatar": f"https://yt3.googleusercontent.com/ytc/AGIKgqPp.png",  # opcional
+            "avatar": "",
             "subs": "",
             "views": ""
         })
