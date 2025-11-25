@@ -7,8 +7,9 @@ export default function ChannelHeader() {
   useEffect(() => {
     async function load() {
       try {
-        const chRes = await fetch(`/api/channel`);
-        const vidRes = await fetch(`/api/latest-videos`);
+        const chRes = await fetch("https://diogorodrigues-backend.onrender.com/api/channel");
+        const vidRes = await fetch("https://diogorodrigues-backend.onrender.com/api/latest-videos");
+
 
         const ch = await chRes.json();
         const vids = await vidRes.json();
