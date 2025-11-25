@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import ChannelHeader from "../components/ChannelHeader";
+import { getLatestVideos } from "../services/backend";   // <-- IMPORT CORRETO
 
 export default function YoutubeSection() {
   const fallbackVideos = [
@@ -15,8 +16,7 @@ export default function YoutubeSection() {
   useEffect(() => {
     async function load() {
       try {
-       const res = await fetch(`/api/latest-videos`);
-        const data = await res.json();
+        const data = await getLatestVideos();   // <-- CHAMADA CORRETA
 
         if (data.live) {
           setLive(data.live);
@@ -51,7 +51,7 @@ export default function YoutubeSection() {
 
         {loading && <p>A carregar…</p>}
 
-        {/* LIVE BLOCK GRANDE */}
+        {/* LIVE BLOCK */}
         {live ? (
           <div className="max-w-5xl mx-auto rounded-2xl overflow-hidden border border-red-700/40 shadow-xl bg-black/40">
             <div className="aspect-video">
