@@ -4,87 +4,106 @@ import requests
 from flask import Flask, jsonify
 from flask_cors import CORS
 
-# cache em memória (RAM do Render)
-CACHE_DURATION = 15 * 60  # 15 minutos
-cache_timestamp = 0
-cache_data = None
+# ============================================================
+# CONFIGURAÇÕES
+# ============================================================
 
-
-CHANNEL_ID = "UCfg5QnFApnh0RXZlZFzvLiQ"
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
+CHANNEL_ID = "UCfg5QnFApnh0RXZlZFzvLiQ"
 
-SEARCH_URL = (
-    "https://www.googleapis.com/youtube/v3/search"
-    "?part=snippet"
-    "&channelId={channel}"
-    "&maxResults=15"
-    "&order=date"
-    "&type=video"
-    "&key={key}"
-)
+CACHE_DURATION = 60 * 15  # 15 minutos
+cache = {
+    "videos": None,
+    "videos_time": 0,
+    "stats": None,
+    "stats_time": 0
+}
 
+# ============================================================
+# FUNÇÃO: Buscar últimos vídeos + live
+# ============================================================
 
-def fetch_youtube_api():
-    """Chama YouTube API (1 vez a cada 15 min)"""
-    global cache_data, cache_timestamp
+def fetch_latest_videos():
+    # Cache valida?
+    if cache["videos"] and time.time() - cache["videos_time"] < CACHE_DURATION:
+        return cache["videos"]
 
-    now = time.time()
+    url = "https://www.googleapis.com/youtube/v3/search"
+    params = {
+        "key": YOUTUBE_API_KEY,
+        "channelId": CHANNEL_ID,
+        "order": "date",
+        "maxResults": 10,
+        "part": "snippet"
+    }
 
-    # usar cache se ainda é válida
-    if cache_data and (now - cache_timestamp) < CACHE_DURATION:
-        return cache_data
+    r = requests.get(url, params=params, timeout=10)
+    data = r.json()
 
-    # criar URL
-    url = SEARCH_URL.format(channel=CHANNEL_ID, key=YOUTUBE_API_KEY)
+    videos = []
+    live = None
 
-    try:
-        response = requests.get(url, timeout=10)
-        data = response.json()
+    for item in data.get("items", []):
+        video_id = item["id"].get("videoId")
+        snippet = item.get("snippet", {})
+        title = snippet.get("title", "")
 
-        # erro da API, evita crash
-        if "items" not in data:
-            raise Exception("YouTube API error")
+        if not video_id:
+            continue
 
-        videos = []
-        live_video = None
+        # Live?
+        if snippet.get("liveBroadcastContent") == "live":
+            live = {"id": video_id, "title": title}
 
-        for item in data["items"]:
-            video_id = item["id"]["videoId"]
-            title = item["snippet"]["title"]
+        videos.append({"id": video_id, "title": title})
 
-            # live detection
-            if item["snippet"].get("liveBroadcastContent") == "live":
-                live_video = {"id": video_id, "title": title}
+    result = {"live": live, "videos": videos}
 
-            videos.append({"id": video_id, "title": title})
+    cache["videos"] = result
+    cache["videos_time"] = time.time()
+    return result
 
-        result = {"live": live_video, "videos": videos}
+# ============================================================
+# FUNÇÃO: Buscar subs, views, nº vídeos
+# ============================================================
 
-        # guardar em cache
-        cache_data = result
-        cache_timestamp = now
+def fetch_channel_stats():
+    # Cache valida?
+    if cache["stats"] and time.time() - cache["stats_time"] < CACHE_DURATION:
+        return cache["stats"]
 
-        return result
+    url = "https://www.googleapis.com/youtube/v3/channels"
+    params = {
+        "key": YOUTUBE_API_KEY,
+        "id": CHANNEL_ID,
+        "part": "statistics"
+    }
 
-    except Exception as e:
-        print("Erro YouTube API:", e)
+    r = requests.get(url, params=params, timeout=10)
+    data = r.json()
 
-        # fallback se der erro
-        return {
-            "live": None,
-            "videos": [
-                {"id": "akkgj63j5rg", "title": "PTracerz CUP 2025"},
-                {"id": "95r7yKBo-4w", "title": "GT3 VS ORT - Corrida Resistência"},
-                {"id": "gupDgHpu3DA", "title": "Cacetada no Zurga"},
-            ],
-        }
+    stats = data["items"][0]["statistics"]
 
+    result = {
+        "subs": stats.get("subscriberCount", "0"),
+        "views": stats.get("viewCount", "0"),
+        "videos": stats.get("videoCount", "0"),
+    }
+
+    cache["stats"] = result
+    cache["stats_time"] = time.time()
+    return result
+
+# ============================================================
+# APP FLASK
+# ============================================================
 
 def create_app():
     app = Flask(__name__)
 
-    frontend = os.getenv("CORS_ORIGIN", "https://diogorodrigues.pt")
-    CORS(app, resources={r"/api/*": {"origins": frontend}})
+    CORS(app, resources={
+        r"/api/*": {"origins": "https://diogorodrigues.pt"}
+    })
 
     @app.route("/api/ping")
     def ping():
@@ -92,20 +111,21 @@ def create_app():
 
     @app.route("/api/latest-videos")
     def latest_videos():
-        data = fetch_youtube_api()
-        return jsonify(data)
+        try:
+            return jsonify(fetch_latest_videos())
+        except Exception as e:
+            print("Erro /api/latest-videos:", e)
+            return jsonify({"live": None, "videos": []})
 
-    @app.route("/api/channel")
-    def channel():
-        return jsonify({
-            "title": "FulLshoT | Diogo Rodrigues",
-            "avatar": "",
-            "subs": "",
-            "views": ""
-        })
+    @app.route("/api/channel-stats")
+    def channel_stats():
+        try:
+            return jsonify(fetch_channel_stats())
+        except Exception as e:
+            print("Erro /api/channel-stats:", e)
+            return jsonify({"subs": "0", "views": "0", "videos": "0"})
 
     return app
-
 
 app = create_app()
 
