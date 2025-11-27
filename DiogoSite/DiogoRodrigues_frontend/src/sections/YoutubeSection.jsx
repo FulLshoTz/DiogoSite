@@ -8,18 +8,19 @@ export default function YoutubeSection() {
   useEffect(() => {
     async function load() {
       try {
-        // 1. Verificar se estamos em LIVE (prioridade)
+        // 1. PRIMEIRO: Verificar se estamos em LIVE (Via rápida)
         const liveRes = await fetch("https://diogorodrigues-backend.onrender.com/api/live-status");
         const liveData = await liveRes.json();
 
+        // Se o servidor disser que é live E der um ID válido
         if (liveData.is_live && liveData.id) {
-          // Se estiver live, guardamos os dados e não carregamos os vídeos normais
+          console.log("Modo Live Ativado:", liveData.title);
           setLive({ id: liveData.id, title: liveData.title });
           setLoading(false);
-          return; 
+          return; // 🛑 Pára aqui! Não carrega a lista de vídeos para não duplicar.
         }
 
-        // 2. Se NÃO estiver live, carregamos os últimos vídeos
+        // 2. SE NÃO HOUVER LIVE: Carregar os últimos vídeos
         const videoRes = await fetch("https://diogorodrigues-backend.onrender.com/api/latest-videos?limit=3");
         const videoData = await videoRes.json();
         
@@ -37,11 +38,12 @@ export default function YoutubeSection() {
     load();
   }, []);
 
-  // Título dinâmico da secção
+  // Texto muda dependendo do estado
   const sectionTitle = live ? "🔴 A TRANSMITIR AGORA" : "Últimos Vídeos";
 
   return (
     <section className="max-w-7xl mx-auto text-white px-4 py-6 mt-2">
+      
       {/* CABEÇALHO DA SECÇÃO */}
       <div className="flex items-center gap-3 mb-6">
         <svg className="w-6 h-6 text-red-600 fill-current" viewBox="0 0 576 512">
@@ -56,12 +58,13 @@ export default function YoutubeSection() {
         <div className="flex-1 h-[2px] bg-red-600"></div>
       </div>
 
-      {loading && <p className="text-gray-500 text-center py-10">A carregar conteúdo...</p>}
+      {loading && <p className="text-gray-500 text-center py-10">A atualizar...</p>}
 
-      {/* MODO LIVE */}
+      {/* --- CENÁRIO 1: MODO LIVE (PLAYER GIGANTE) --- */}
       {live ? (
-        <div className="max-w-5xl mx-auto">
-           <div className="aspect-video rounded-2xl overflow-hidden border-2 border-red-600 shadow-[0_0_30px_rgba(220,38,38,0.3)] bg-black">
+        <div className="max-w-5xl mx-auto animate-in fade-in duration-700">
+           {/* Player com borda brilhante */}
+           <div className="aspect-video rounded-2xl overflow-hidden border-2 border-red-600 shadow-[0_0_35px_rgba(220,38,38,0.4)] bg-black relative z-10">
             <iframe
               className="w-full h-full"
               src={`https://www.youtube.com/embed/${live.id}?autoplay=1&mute=0`}
@@ -70,13 +73,28 @@ export default function YoutubeSection() {
               allowFullScreen
             />
           </div>
-          <div className="mt-4 p-4 bg-red-900/20 border border-red-900/50 rounded-xl">
-             <h2 className="text-xl font-bold text-white">{live.title}</h2>
-             <p className="text-red-400 font-semibold text-sm mt-1">Clique no play para assistir!</p>
+          
+          {/* Info da Live */}
+          <div className="mt-4 p-5 bg-gradient-to-r from-red-900/40 to-black border border-red-900/50 rounded-xl flex justify-between items-center">
+             <div>
+               <h2 className="text-xl font-bold text-white">{live.title}</h2>
+               <p className="text-red-400 font-semibold text-sm mt-1 flex items-center gap-2">
+                 <span className="w-2 h-2 bg-red-500 rounded-full animate-ping"/>
+                 Em direto • Clique no Play para assistir
+               </p>
+             </div>
+             <a 
+               href={`https://www.youtube.com/watch?v=${live.id}`} 
+               target="_blank"
+               rel="noreferrer"
+               className="hidden sm:block px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-full transition shadow-lg"
+             >
+               Ver no Chat
+             </a>
           </div>
         </div>
       ) : (
-        /* MODO VÍDEOS NORMAIS */
+        /* --- CENÁRIO 2: LISTA DE VÍDEOS NORMAL --- */
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
           {videos.map((v) => (
             <div key={v.id} className="bg-neutral-900 rounded-xl overflow-hidden border border-red-700/30 hover:border-red-600 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group">
