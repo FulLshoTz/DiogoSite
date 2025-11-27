@@ -28,3 +28,10 @@ def latest_videos():
     if "error" in data:
         return jsonify(data), 500
     return jsonify(data)
+    
+from src.utils.news_api import get_simracing_news
+
+@youtube_bp.route("/simracing-news", methods=["GET"])
+def simracing_news():
+    return jsonify(get_simracing_news())
+
