@@ -35,3 +35,9 @@ from src.utils.news_api import get_simracing_news
 def simracing_news():
     return jsonify(get_simracing_news())
 
+@youtube_bp.route("/debug-news", methods=["GET"])
+def debug_news():
+    return jsonify({"ok": True})
+
+
+
