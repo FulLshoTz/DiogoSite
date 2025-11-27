@@ -44,9 +44,16 @@ export default function Header() {
             />
 
             <div>
-              <h1 className="text-3xl font-extrabold text-white" style={{ fontFamily: "RushDriver" }}>
-                FulLshoT <span className="text-red-400">|</span> Diogo Rodrigues
-              </h1>
+              <h1
+  className="text-3xl font-extrabold text-white"
+  style={{
+    fontFamily: "RushDriver",
+    letterSpacing: "0.04em"
+  }}
+>
+  FulLshoT <span className="text-red-400">|</span> Diogo Rodrigues
+</h1>
+
 
               {/* Stats */}
               <div className="flex items-center gap-4 text-sm text-red-200/80 mt-1">
