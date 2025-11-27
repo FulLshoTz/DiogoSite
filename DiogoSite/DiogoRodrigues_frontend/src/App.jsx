@@ -5,36 +5,32 @@ import Corridas from "./pages/Corridas";
 import Circuitos from "./pages/Circuitos";
 import Definicoes from "./pages/Definicoes";
 import Header from "./components/Header";
-import Sidebar from "./components/Sidebar";
+// import Sidebar from "./components/Sidebar"; // <--- 5. REMOVIDO
 import Background from "./components/Background";
 
 function App() {
-  // 🔁 Mantém backend acordado (Render FREE)
+  //  🔁  Mantém backend acordado (Render FREE)
   useEffect(() => {
     const ping = () => {
       fetch("https://diogorodrigues-backend.onrender.com/api/ping")
         .then(() => console.log("Ping backend ok"))
         .catch(() => console.log("Backend ainda a acordar..."));
     };
-
-    ping(); // ping ao abrir
-    const interval = setInterval(ping, 30000); // a cada 30s
+    ping();
+    const interval = setInterval(ping, 30000);
     return () => clearInterval(interval);
   }, []);
 
   return (
     <>
-      {/* Fundo animado de fibra de carbono */}
       <Background />
-
-      {/* Estrutura principal */}
       <Router>
-        <div className="flex min-h-screen bg-black text-white">
-          <Sidebar />
-          <div className="flex-1 flex flex-col">
+        <div className="flex min-h-screen bg-transparent text-white">
+          {/* <Sidebar />  <--- 5. COMENTADO/REMOVIDO */}
+          
+          <div className="flex-1 flex flex-col w-full"> {/* Adicionei w-full para garantir largura total */}
             <Header />
-            {/* padding-top = altura do header */}
-            <main className="flex-1 pt-32 sm:pt-40">
+            <main className="flex-1 pt-32 sm:pt-40 px-4"> {/* Adicionei px-4 para margem mobile */}
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/corridas" element={<Corridas />} />
