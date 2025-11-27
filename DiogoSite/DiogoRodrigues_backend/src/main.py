@@ -24,7 +24,6 @@ cache = {
 # ============================================================
 
 def fetch_latest_videos():
-    # Cache valida?
     if cache["videos"] and time.time() - cache["videos_time"] < CACHE_DURATION:
         return cache["videos"]
 
@@ -63,12 +62,12 @@ def fetch_latest_videos():
     cache["videos_time"] = time.time()
     return result
 
+
 # ============================================================
 # FUNÇÃO: Buscar subs, views, nº vídeos
 # ============================================================
 
 def fetch_channel_stats():
-    # Cache valida?
     if cache["stats"] and time.time() - cache["stats_time"] < CACHE_DURATION:
         return cache["stats"]
 
@@ -94,6 +93,7 @@ def fetch_channel_stats():
     cache["stats_time"] = time.time()
     return result
 
+
 # ============================================================
 # APP FLASK
 # ============================================================
@@ -101,13 +101,18 @@ def fetch_channel_stats():
 def create_app():
     app = Flask(__name__)
 
+    # ⚠️ CORS para o teu domínio
     CORS(app, resources={
         r"/api/*": {"origins": "https://diogorodrigues.pt"}
     })
 
+    # ⚠️ REGISTAR BLUEPRINT AQUI (corrigido!)
     from src.youtube_routes import youtube_bp
-app.register_blueprint(youtube_bp, url_prefix="/api")
+    app.register_blueprint(youtube_bp, url_prefix="/api")
 
+    # ---------------------------------------------------------
+    # ROTAS LOCAIS
+    # ---------------------------------------------------------
 
     @app.route("/api/ping")
     def ping():
@@ -131,8 +136,8 @@ app.register_blueprint(youtube_bp, url_prefix="/api")
 
     return app
 
+
 app = create_app()
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
-
