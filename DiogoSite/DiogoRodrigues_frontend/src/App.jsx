@@ -34,7 +34,7 @@ function App() {
           <div className="flex-1 flex flex-col">
             <Header />
             {/* padding-top = altura do header */}
-            <main className="flex-1 pt-36">
+            <main className="flex-1 pt-32 sm:pt-40">
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/corridas" element={<Corridas />} />
