@@ -44,7 +44,12 @@ export default function YoutubeSection() {
           <svg className="w-6 h-6 text-red-600" viewBox="0 0 576 512" fill="currentColor">
             <path d="M549.7 124.1c-6.3-23.6-24.8-42.3-48.3-48.6C458.8 64 288 64 288 64S117.2 64 74.6 75.5C51.1 81.8 32.6 100.4 26.3 124c-11.4 42.8-11.4 132-11.4 132s0 89.2 11.4 132c6.3 23.6 24.8 42.3 48.3 48.6C117.2 448 288 448 288 448s170.8 0 213.4-11.4c23.5-6.3 42-25 48.3-48.6 11.4-42.8 11.4-132 11.4-132s0-89.2-11.4-132zM232.1 337.6V174.4l142.7 81.6-142.7 81.6z"/>
           </svg>
-          <h3 className="text-2xl font-bold tracking-wide">{sectionTitle}</h3>
+          <h3
+  className="text-2xl font-bold tracking-wide"
+  style={{ fontFamily: "RushDriver" }}
+>
+  {sectionTitle}
+</h3>
           <div className="flex-1 h-[2px] bg-red-600"></div>
         </div>
 
