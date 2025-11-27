@@ -105,6 +105,10 @@ def create_app():
         r"/api/*": {"origins": "https://diogorodrigues.pt"}
     })
 
+    from src.youtube_routes import youtube_bp
+app.register_blueprint(youtube_bp, url_prefix="/api")
+
+
     @app.route("/api/ping")
     def ping():
         return jsonify({"status": "ok"})
@@ -131,3 +135,4 @@ app = create_app()
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
+
