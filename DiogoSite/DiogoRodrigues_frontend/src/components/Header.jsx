@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import logo from "../assets/logo.png";
 
+// URL do backend (mantive o que tinhas)
+const API_URL = "https://diogorodrigues-backend.onrender.com";
+
 export default function Header() {
   const [stats, setStats] = useState(null);
   const [isLive, setIsLive] = useState(false);
@@ -9,13 +12,26 @@ export default function Header() {
   useEffect(() => {
     async function load() {
       try {
-        const status = await fetch("https://diogorodrigues-backend.onrender.com/api/latest-videos")
-          .then(r => r.json());
-        const s = await fetch("https://diogorodrigues-backend.onrender.com/api/channel-stats")
-          .then(r => r.json());
+        // 1. Buscar STATUS DA LIVE (Nova rota separada)
+        // O backend novo separou a verificação de live dos vídeos normais
+        const liveRes = await fetch(`${API_URL}/api/live-status`);
+        const liveData = await liveRes.json();
+        setIsLive(liveData.is_live);
 
-        setIsLive(!!status.live);
-        setStats(s);
+        // 2. Buscar ESTATÍSTICAS (Nova rota organizada)
+        // A rota antiga era /channel-stats, a nova é /channel-info
+        const infoRes = await fetch(`${API_URL}/api/channel-info`);
+        const infoData = await infoRes.json();
+
+        // O formato dos dados mudou ligeiramente no novo backend,
+        // por isso precisamos de mapear corretamente aqui:
+        if (infoData.stats) {
+          setStats({
+            subs: infoData.stats.subscriberCount,
+            views: infoData.stats.viewCount,
+            videos: infoData.stats.videoCount,
+          });
+        }
       } catch (err) {
         console.error("Erro Header:", err);
       }
@@ -32,25 +48,19 @@ export default function Header() {
 
   return (
     <header className="fixed top-0 left-0 w-full bg-black/40 backdrop-blur-md border-b border-red-700/40 z-50">
-
       {/* WRAPPER */}
       <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3 sm:py-4">
-
         {/* TOP ROW */}
         <div className="flex items-center justify-between gap-4">
-
           {/* LOGO + INFO */}
           <div className="flex items-center gap-3 sm:gap-6">
-
             {/* LOGO RESPONSIVO */}
             <img
               src={logo}
               alt="Logo"
               className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl border border-red-700 shadow-xl"
             />
-
             <div className="leading-tight">
-
               {/* TÍTULO RESPONSIVO */}
               <h1
                 className="text-lg sm:text-3xl font-extrabold text-white leading-tight"
@@ -64,21 +74,24 @@ export default function Header() {
 
               {/* STATS compactas */}
               <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-red-200/80 mt-1">
-                <span>{stats?.subs || "???"} subs</span>
+                <span>{stats?.subs || "..."} subs</span>
                 <span>·</span>
-                <span>{stats?.views || "???"} views</span>
+                <span>{stats?.views || "..."} views</span>
                 <span>·</span>
-                <span>{stats?.videos || "???"} vídeos</span>
+                <span>{stats?.videos || "..."} vídeos</span>
               </div>
 
               {/* LIVE/Offline */}
               <div className="flex items-center gap-1 sm:gap-2 mt-1 text-xs sm:text-sm">
-                <span className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${isLive ? "bg-red-500" : "bg-neutral-500"}`} />
+                <span
+                  className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${
+                    isLive ? "bg-red-500 live-ring" : "bg-neutral-500"
+                  }`}
+                />
                 <span className={`${isLive ? "text-red-400" : "text-neutral-400"}`}>
-                  {isLive ? "🔴 Online" : "Offline"}
+                  {isLive ? " 🔴  Online" : "Offline"}
                 </span>
               </div>
-
             </div>
           </div>
 
@@ -92,7 +105,6 @@ export default function Header() {
             >
               YouTube
             </a>
-
             <a
               href="https://instagram.com/fullshotz"
               target="_blank"
@@ -122,7 +134,6 @@ export default function Header() {
             </NavLink>
           ))}
         </nav>
-
       </div>
     </header>
   );
