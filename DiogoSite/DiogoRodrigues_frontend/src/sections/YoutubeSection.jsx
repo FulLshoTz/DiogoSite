@@ -38,7 +38,6 @@ export default function YoutubeSection() {
 
   return (
     <>
-      <ChannelHeader />
 
       <section className="max-w-7xl mx-auto text-white px-4 py-6 mt-2">
         <div className="flex items-center gap-3 mb-6">
