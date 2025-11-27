@@ -35,3 +35,9 @@ section {
   animation: live-pulse 1.6s ease-in-out infinite;
   border-radius: 9999px;
 }
+@font-face {
+  font-family: "RushDriver";
+  src: url("/src/assets/fonts/RushDriver-Italic.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
