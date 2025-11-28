@@ -8,21 +8,14 @@ html, body, #root {
   margin: 0;
   padding: 0;
   font-family: 'Inter', sans-serif;
-  background: transparent !important;
+  /* IMPORTANTE: Fundo transparente para ver o componente Background */
+  background-color: transparent !important;
   color: white;
 }
 
-/* estes overrides eram os teus — mantive */
-[class*="bg-black"],
-[class*="bg-neutral-900"],
-[class*="bg-neutral-950"],
-header,
-main,
-footer,
-section {
-  background-color: rgba(0, 0, 0, 0.65) !important;
-  backdrop-filter: blur(3px);
-}
+/* REMOVI O BLOCO QUE PINTAVA TUDO DE PRETO.
+   Agora o fundo de carbono vai aparecer!
+*/
 
 /* ====== LIVE PULSE (borda do avatar quando está online) ====== */
 @keyframes live-pulse {
@@ -35,6 +28,7 @@ section {
   animation: live-pulse 1.6s ease-in-out infinite;
   border-radius: 9999px;
 }
+
 @font-face {
   font-family: "RushDriver";
   src: url("/src/assets/fonts/RushDriver-Italic.otf") format("opentype");
