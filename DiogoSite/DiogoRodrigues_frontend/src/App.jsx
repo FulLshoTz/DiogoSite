@@ -25,6 +25,7 @@ function App() {
     <>
       <Background />
       <Router>
+        {/* O "bg-transparent" deixa ver o componente <Background /> que está por trás */}
         <div className="flex min-h-screen bg-transparent text-white">
           {/* <Sidebar />  <--- 5. COMENTADO/REMOVIDO */}
           
