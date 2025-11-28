@@ -11,56 +11,45 @@ export default function Background() {
         height: "100vh",
         zIndex: -1,
         pointerEvents: "none",
-        backgroundColor: "#050505", // Fundo base quase preto
+        // 1. Cor de fundo base (Cinzento escuro, já não é preto)
+        backgroundColor: "#111111", 
       }}
     >
-      {/* =================================================================
-         ESCOLHA O TEU ESTILO AQUI (Comenta um e desconta o outro)
-         =================================================================
+      {/* 2. TEXTURA DE FIBRA DE CARBONO REALISTA 
+        Usamos um padrão "seamless" (sem costuras) que cria o efeito perfeito.
       */}
-
-      {/* --- OPÇÃO 1: FIBRA DE CARBONO (Atual) --- */}
       <div
         style={{
           position: "absolute",
           inset: 0,
-          opacity: 0.15, // Controla a intensidade do carbono (0.1 a 0.3)
-          backgroundImage: `
-            linear-gradient(27deg, #151515 5px, transparent 5px),
-            linear-gradient(207deg, #151515 5px, transparent 5px),
-            linear-gradient(27deg, #222 5px, transparent 5px),
-            linear-gradient(207deg, #222 5px, transparent 5px)
-          `,
-          backgroundSize: "20px 20px",
-          backgroundPosition: "0 0, 10px 0, 0 10px, 10px 5px",
+          opacity: 0.6, // Aumenta isto se quiseres mais visível (0.4 a 0.8)
+          // Esta imagem é um padrão minúsculo de carbono que se repete
+          backgroundImage: "url('https://www.transparenttextures.com/patterns/carbon-fibre.png')",
         }}
       />
 
-      {/* --- OPÇÃO 2: TECH GRID (Moderno / SimRacing UI) --- 
-          Para usar este, comenta o <div> de cima e desconta este:
+      {/* 3. SOMBRA NOS CANTOS (Vignette)
+        Mantemos isto para dar aquele aspeto "premium" e focar no centro
       */}
-      {/* <div
+      <div
         style={{
           position: "absolute",
           inset: 0,
-          opacity: 0.2,
-          backgroundImage: `
-            linear-gradient(to right, #333 1px, transparent 1px),
-            linear-gradient(to bottom, #333 1px, transparent 1px)
-          `,
-          backgroundSize: "40px 40px",
+          background: "radial-gradient(circle, transparent 50%, #000000 100%)",
         }}
       />
-      */}
-
-      {/* ================================================================= */}
       
-      {/* VIGNETTE (Sombra nos cantos para dar ar profissional) */}
+      {/* 4. Opcional: Um brilho vermelho muito subtil no topo para dar "vida" 
+        Se não gostares, podes apagar este bloco div
+      */}
       <div
         style={{
           position: "absolute",
-          inset: 0,
-          background: "radial-gradient(circle, transparent 40%, #000000 100%)",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "300px",
+          background: "linear-gradient(to bottom, rgba(220, 38, 38, 0.15), transparent)",
         }}
       />
     </div>
