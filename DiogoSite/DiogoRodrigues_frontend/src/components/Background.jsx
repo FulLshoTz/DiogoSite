@@ -1,60 +1,8 @@
-import React, { useEffect } from "react";
+import React from "react";
 
 export default function Background() {
-  useEffect(() => {
-    const canvas = document.getElementById("carbon-bg");
-    const ctx = canvas.getContext("2d");
-
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-
-    resize();
-    window.addEventListener("resize", resize);
-
-    const draw = () => {
-      const w = canvas.width;
-      const h = canvas.height;
-      ctx.clearRect(0, 0, w, h);
-
-      // Fundo escuro com gradiente
-      const gradient = ctx.createLinearGradient(0, 0, w, h);
-      gradient.addColorStop(0, "#0a0a0a");
-      gradient.addColorStop(1, "#1a1a1a");
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, w, h);
-
-      // Linhas de "fibra de carbono"
-      const spacing = 8;
-      ctx.strokeStyle = "rgba(255,255,255,0.03)";
-      ctx.lineWidth = 1;
-
-      for (let x = 0; x < w; x += spacing) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x - h, h);
-        ctx.stroke();
-      }
-
-      for (let x = 0; x < w; x += spacing) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x + h, h);
-        ctx.stroke();
-      }
-
-      requestAnimationFrame(draw);
-    };
-
-    draw();
-
-    return () => window.removeEventListener("resize", resize);
-  }, []);
-
   return (
-    <canvas
-      id="carbon-bg"
+    <div
       style={{
         position: "fixed",
         top: 0,
@@ -63,7 +11,58 @@ export default function Background() {
         height: "100vh",
         zIndex: -1,
         pointerEvents: "none",
+        backgroundColor: "#050505", // Fundo base quase preto
       }}
-    />
+    >
+      {/* =================================================================
+         ESCOLHA O TEU ESTILO AQUI (Comenta um e desconta o outro)
+         =================================================================
+      */}
+
+      {/* --- OPÇÃO 1: FIBRA DE CARBONO (Atual) --- */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          opacity: 0.15, // Controla a intensidade do carbono (0.1 a 0.3)
+          backgroundImage: `
+            linear-gradient(27deg, #151515 5px, transparent 5px),
+            linear-gradient(207deg, #151515 5px, transparent 5px),
+            linear-gradient(27deg, #222 5px, transparent 5px),
+            linear-gradient(207deg, #222 5px, transparent 5px)
+          `,
+          backgroundSize: "20px 20px",
+          backgroundPosition: "0 0, 10px 0, 0 10px, 10px 5px",
+        }}
+      />
+
+      {/* --- OPÇÃO 2: TECH GRID (Moderno / SimRacing UI) --- 
+          Para usar este, comenta o <div> de cima e desconta este:
+      */}
+      {/* <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          opacity: 0.2,
+          backgroundImage: `
+            linear-gradient(to right, #333 1px, transparent 1px),
+            linear-gradient(to bottom, #333 1px, transparent 1px)
+          `,
+          backgroundSize: "40px 40px",
+        }}
+      />
+      */}
+
+      {/* ================================================================= */}
+      
+      {/* VIGNETTE (Sombra nos cantos para dar ar profissional) */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: "radial-gradient(circle, transparent 40%, #000000 100%)",
+        }}
+      />
+    </div>
   );
 }
