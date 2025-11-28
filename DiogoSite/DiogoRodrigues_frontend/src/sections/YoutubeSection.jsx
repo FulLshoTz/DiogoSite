@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 
-// 1. OS TEUS VÍDEOS DE SEGURANÇA (HARDCODED)
-// Estes aparecem se o backend estiver a dormir, der erro ou demorar muito.
+// 1. VÍDEOS DE SEGURANÇA (BACKUP)
+// Se o servidor estiver a dormir, mostramos estes imediatamente.
 const FALLBACK_VIDEOS = [
   { id: "akkgj63j5rg", title: "PTracerz CUP 2025" },
   { id: "95r7yKBo-4w", title: "GT3 VS ORT - Corrida resistência" },
@@ -12,55 +12,70 @@ export default function YoutubeSection() {
   const [videos, setVideos] = useState([]);
   const [live, setLive] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+  // Estado para saber se estamos a usar o backup (server down/sleeping)
+  const [isUsingBackup, setIsUsingBackup] = useState(false);
 
-  useEffect(() => {
-    async function load() {
-      // Cria um temporizador: Se passar de 5 segundos, cancela tudo e usa o backup
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); 
+  // Função para carregar dados
+  async function loadData() {
+    const controller = new AbortController();
+    // Timeout curto (5s): Se o servidor não responder rápido, assumimos que está a dormir
+    const timeoutId = setTimeout(() => controller.abort(), 5000); 
 
-      try {
-        // 1. Tentar ver se há LIVE
-        const liveRes = await fetch("https://diogorodrigues-backend.onrender.com/api/live-status", { 
-          signal: controller.signal 
-        });
-        
-        const liveData = await liveRes.json();
+    try {
+      // 1. Verificar LIVE
+      const liveRes = await fetch("https://diogorodrigues-backend.onrender.com/api/live-status", { signal: controller.signal });
+      const liveData = await liveRes.json();
 
-        // Se houver live, mostra a live e pára tudo o resto
-        if (liveData.is_live && liveData.id) {
-          setLive({ id: liveData.id, title: liveData.title });
-          setLoading(false);
-          clearTimeout(timeoutId); // Cancela o timeout porque já temos dados
-          return; 
-        }
-
-        // 2. Tentar buscar VÍDEOS RECENTES da API
-        const videosRes = await fetch("https://diogorodrigues-backend.onrender.com/api/latest-videos?limit=3", {
-          signal: controller.signal
-        });
-        const videosData = await videosRes.json();
-        
-        clearTimeout(timeoutId); // Tudo correu bem, cancela o timeout
-
-        if (videosData.videos && videosData.videos.length > 0) {
-          setVideos(videosData.videos);
-        } else {
-          // Se a API responder mas vier vazia, usa os teus vídeos fixos
-          setVideos(FALLBACK_VIDEOS);
-        }
-
-      } catch (err) {
-        console.warn("Backend a dormir ou erro de rede. A carregar vídeos de backup.");
-        // EM CASO DE ERRO (Backend a dormir/Timeout), MOSTRA OS VÍDEOS FIXOS IMEDIATAMENTE
-        setVideos(FALLBACK_VIDEOS);
-      } finally {
+      if (liveData.is_live && liveData.id) {
+        setLive({ id: liveData.id, title: liveData.title });
         setLoading(false);
+        setIsUsingBackup(false); // Sucesso! Backend acordado.
+        clearTimeout(timeoutId);
+        return; 
       }
-    }
 
-    load();
+      // 2. Verificar VÍDEOS
+      const videosRes = await fetch("https://diogorodrigues-backend.onrender.com/api/latest-videos?limit=3", { signal: controller.signal });
+      const videosData = await videosRes.json();
+      
+      clearTimeout(timeoutId);
+
+      if (videosData.videos && videosData.videos.length > 0) {
+        setVideos(videosData.videos);
+        setIsUsingBackup(false); // Sucesso! Backend acordado.
+      } else {
+        throw new Error("Lista vazia");
+      }
+
+    } catch (err) {
+      console.warn("Backend indisponível (Timeout/Sleep). A ativar backup.");
+      
+      // Só substituímos pelos vídeos de backup se não tivermos nada
+      setVideos((prev) => prev.length > 0 ? prev : FALLBACK_VIDEOS);
+      setIsUsingBackup(true); // Ativa o modo de retry
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Effect 1: Carregar ao iniciar
+  useEffect(() => {
+    loadData();
   }, []);
+
+  // Effect 2: Retry Automático se estivermos em modo Backup
+  useEffect(() => {
+    let interval;
+    if (isUsingBackup) {
+      // Se estivermos a usar backup, tenta reconectar a cada 10 segundos
+      interval = setInterval(() => {
+        console.log("🔄 A tentar reconectar ao servidor...");
+        loadData();
+      }, 10000);
+    }
+    return () => clearInterval(interval);
+  }, [isUsingBackup]);
 
   const sectionTitle = live ? "🔴 A TRANSMITIR AGORA" : "Últimos Vídeos";
 
@@ -76,9 +91,8 @@ export default function YoutubeSection() {
         <div className="flex-1 h-[2px] bg-red-600"></div>
       </div>
 
-      {/* === LOADING SKELETON (PLACEHOLDERS) === */}
-      {/* Enquanto carrega, mostra retângulos cinzentos a piscar */}
       {loading ? (
+        // SKELETON LOADER (Pisca enquanto carrega)
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
           {[1, 2, 3].map((n) => (
             <div key={n} className="bg-neutral-900 rounded-xl overflow-hidden border border-neutral-800 animate-pulse">
@@ -91,7 +105,7 @@ export default function YoutubeSection() {
           ))}
         </div>
       ) : live ? (
-        /* MODO LIVE */
+        // MODO LIVE
         <div className="max-w-5xl mx-auto animate-in fade-in duration-700">
            <div className="aspect-video rounded-2xl overflow-hidden border-2 border-red-600 shadow-[0_0_35px_rgba(220,38,38,0.4)] bg-black relative z-10">
             <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${live.id}?autoplay=1&mute=0`} allowFullScreen title="Live" />
@@ -106,7 +120,7 @@ export default function YoutubeSection() {
           </div>
         </div>
       ) : (
-        /* MODO VÍDEOS (Usa API ou Backup se falhar/demorar) */
+        // MODO VÍDEOS (Reais ou Backup)
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
           {videos.map((v) => (
             <div key={v.id} className="bg-neutral-900 rounded-xl overflow-hidden border border-red-700/30 hover:border-red-600 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group">
