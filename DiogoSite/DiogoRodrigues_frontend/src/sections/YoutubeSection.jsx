@@ -1,7 +1,12 @@
+/* 🔴 REGRAS DO YOUTUBE (LÓGICA CRÍTICA):
+   1. PRIORIDADE: Tenta sempre buscar a LIVE stream primeiro.
+   2. FALLBACK 1 (API): Se não houver live, busca os últimos 3 vídeos da API.
+   3. FALLBACK 2 (Hardcoded): Se a API falhar (ex: Quota/Erro 500), 
+      ativa 'isUsingBackup' e mostra os vídeos manuais 'FALLBACK_VIDEOS'.
+   4. RETRY: Se estiver em modo Backup, tenta reconectar à API a cada 10s.
+*/
 import React, { useState, useEffect } from "react";
 
-// 1. VÍDEOS DE SEGURANÇA (BACKUP)
-// Se o servidor estiver a dormir, mostramos estes imediatamente.
 const FALLBACK_VIDEOS = [
   { id: "akkgj63j5rg", title: "PTracerz CUP 2025" },
   { id: "95r7yKBo-4w", title: "GT3 VS ORT - Corrida resistência" },
@@ -12,15 +17,11 @@ export default function YoutubeSection() {
   const [videos, setVideos] = useState([]);
   const [live, setLive] = useState(null);
   const [loading, setLoading] = useState(true);
-  
-  // Estado para saber se estamos a usar o backup (server down/sleeping)
   const [isUsingBackup, setIsUsingBackup] = useState(false);
 
-  // Função para carregar dados
   async function loadData() {
     const controller = new AbortController();
-    // Timeout curto (5s): Se o servidor não responder rápido, assumimos que está a dormir
-    const timeoutId = setTimeout(() => controller.abort(), 5000); 
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
 
     try {
       // 1. Verificar LIVE
@@ -30,7 +31,7 @@ export default function YoutubeSection() {
       if (liveData.is_live && liveData.id) {
         setLive({ id: liveData.id, title: liveData.title });
         setLoading(false);
-        setIsUsingBackup(false); // Sucesso! Backend acordado.
+        setIsUsingBackup(false);
         clearTimeout(timeoutId);
         return; 
       }
@@ -43,32 +44,25 @@ export default function YoutubeSection() {
 
       if (videosData.videos && videosData.videos.length > 0) {
         setVideos(videosData.videos);
-        setIsUsingBackup(false); // Sucesso! Backend acordado.
+        setIsUsingBackup(false);
       } else {
         throw new Error("Lista vazia");
       }
 
     } catch (err) {
       console.warn("Backend indisponível (Timeout/Sleep). A ativar backup.");
-      
-      // Só substituímos pelos vídeos de backup se não tivermos nada
       setVideos((prev) => prev.length > 0 ? prev : FALLBACK_VIDEOS);
-      setIsUsingBackup(true); // Ativa o modo de retry
+      setIsUsingBackup(true);
     } finally {
       setLoading(false);
     }
   }
 
-  // Effect 1: Carregar ao iniciar
-  useEffect(() => {
-    loadData();
-  }, []);
+  useEffect(() => { loadData(); }, []);
 
-  // Effect 2: Retry Automático se estivermos em modo Backup
   useEffect(() => {
     let interval;
     if (isUsingBackup) {
-      // Se estivermos a usar backup, tenta reconectar a cada 10 segundos
       interval = setInterval(() => {
         console.log("🔄 A tentar reconectar ao servidor...");
         loadData();
@@ -92,20 +86,15 @@ export default function YoutubeSection() {
       </div>
 
       {loading ? (
-        // SKELETON LOADER (Pisca enquanto carrega)
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
           {[1, 2, 3].map((n) => (
             <div key={n} className="bg-neutral-900 rounded-xl overflow-hidden border border-neutral-800 animate-pulse">
               <div className="aspect-video bg-neutral-800" />
-              <div className="p-4 space-y-2">
-                <div className="h-4 bg-neutral-800 rounded w-3/4" />
-                <div className="h-4 bg-neutral-800 rounded w-1/2" />
-              </div>
+              <div className="p-4 space-y-2"><div className="h-4 bg-neutral-800 rounded w-3/4" /></div>
             </div>
           ))}
         </div>
       ) : live ? (
-        // MODO LIVE
         <div className="max-w-5xl mx-auto animate-in fade-in duration-700">
            <div className="aspect-video rounded-2xl overflow-hidden border-2 border-red-600 shadow-[0_0_35px_rgba(220,38,38,0.4)] bg-black relative z-10">
             <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${live.id}?autoplay=1&mute=0`} allowFullScreen title="Live" />
@@ -120,7 +109,6 @@ export default function YoutubeSection() {
           </div>
         </div>
       ) : (
-        // MODO VÍDEOS (Reais ou Backup)
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
           {videos.map((v) => (
             <div key={v.id} className="bg-neutral-900 rounded-xl overflow-hidden border border-red-700/30 hover:border-red-600 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group">
