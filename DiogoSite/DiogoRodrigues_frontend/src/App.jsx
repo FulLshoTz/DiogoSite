@@ -5,8 +5,9 @@ import Corridas from "./pages/Corridas";
 import Circuitos from "./pages/Circuitos";
 import Definicoes from "./pages/Definicoes";
 import Header from "./components/Header";
-// import Sidebar from "./components/Sidebar"; // <--- 5. REMOVIDO
+// import Sidebar from "./components/Sidebar"; 
 import Background from "./components/Background";
+import Footer from "./components/Footer"; // <--- 1. IMPORTAR O FOOTER
 
 function App() {
   //  🔁  Mantém backend acordado (Render FREE)
@@ -27,11 +28,11 @@ function App() {
       <Router>
         {/* O "bg-transparent" deixa ver o componente <Background /> que está por trás */}
         <div className="flex min-h-screen bg-transparent text-white">
-          {/* <Sidebar />  <--- 5. COMENTADO/REMOVIDO */}
           
-          <div className="flex-1 flex flex-col w-full"> {/* Adicionei w-full para garantir largura total */}
+          <div className="flex-1 flex flex-col w-full"> 
             <Header />
-            <main className="flex-1 pt-32 sm:pt-40 px-4"> {/* Adicionei px-4 para margem mobile */}
+            
+            <main className="flex-1 pt-32 sm:pt-40 px-4"> 
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/corridas" element={<Corridas />} />
@@ -39,6 +40,10 @@ function App() {
                 <Route path="/definicoes" element={<Definicoes />} />
               </Routes>
             </main>
+
+            {/* <--- 2. ADICIONAR O FOOTER AQUI */}
+            <Footer /> 
+
           </div>
         </div>
       </Router>
