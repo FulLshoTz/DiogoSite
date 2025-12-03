@@ -3,14 +3,15 @@ import { Link } from "react-router-dom";
 
 export default function Footer() {
   return (
-    <footer className="w-full mt-20 border-t border-red-900/30 bg-black/60 backdrop-blur-md">
+    <footer className="w-full mt-auto border-t border-red-900/30 bg-black/60 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 py-12">
         
+        {/* GRID PRINCIPAL (3 Colunas no PC, 1 no Mobile) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 text-sm">
-          
+
           {/* COLUNA 1: SOBRE */}
           <div className="space-y-4">
-            <h3 className="text-2xl text-white tracking-wide" style={{ fontFamily: "RushDriver" }}>
+            <h3 className="text-2xl text-white tracking-wide" style={{ fontFamily: "RushDriver, sans-serif" }}>
               FulLshoT <span className="text-red-600">Hub</span>
             </h3>
             <p className="text-gray-400 leading-relaxed">
@@ -34,6 +35,7 @@ export default function Footer() {
           <div className="space-y-4">
             <h4 className="text-lg font-bold text-white uppercase tracking-wider">Conectar</h4>
             <div className="flex flex-col gap-3">
+              
               <a 
                 href="https://www.youtube.com/@FulLshoT" 
                 target="_blank" 
@@ -43,6 +45,7 @@ export default function Footer() {
                 <span className="bg-red-600 text-white px-2 py-0.5 rounded text-xs font-bold">YT</span>
                 YouTube Channel
               </a>
+
               <a 
                 href="https://instagram.com/fullshotz" 
                 target="_blank" 
@@ -52,9 +55,12 @@ export default function Footer() {
                 <span className="bg-pink-600 text-white px-2 py-0.5 rounded text-xs font-bold">IG</span>
                 Instagram
               </a>
+
+              {/* DICA: Transformei o email num link clicável */}
               <p className="text-gray-500 pt-2">
-                Contacto: <span className="text-gray-300">diogo@fullshot.pt</span>
+                Contacto: <a href="mailto:diogo@fullshot.pt" className="text-gray-300 hover:text-red-500 transition-colors">diogo@fullshot.pt</a>
               </p>
+
             </div>
           </div>
 
