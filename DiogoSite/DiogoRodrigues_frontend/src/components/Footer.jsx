@@ -33,7 +33,7 @@ export default function Footer() {
 
           {/* COLUNA 2: NAVEGAÇÃO DINÂMICA */}
           <div className="space-y-4">
-            <h4 className="text-lg font-bold text-white uppercase tracking-wider">Navegação</h4>
+            <h4 className="text-lg font-bold text-white uppercase tracking-wider">Menu Rápido</h4>
             <div className="flex flex-col gap-2 text-gray-400">
               
               {/* Gera os links automaticamente baseado na lista acima */}
