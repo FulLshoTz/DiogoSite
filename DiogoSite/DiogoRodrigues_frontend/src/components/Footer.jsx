@@ -1,3 +1,8 @@
+/* 🔴 REGRAS DO FOOTER:
+   1. ESTRUTURA: Manter 3 colunas em Desktop, 1 em Mobile.
+   2. LINKS: A navegação deve ser gerada pelo array 'linksNavegacao' (não hardcodar links soltos).
+   3. CRÉDITOS: Manter sempre o ano dinâmico (new Date) e a menção "Powered by SimRacing Passion".
+*/
 import React from "react";
 import { Link } from "react-router-dom";
 
@@ -5,7 +10,6 @@ export default function Footer() {
   const anoAtual = new Date().getFullYear();
 
   // 🛠️ CONFIGURAÇÃO: Adiciona ou remove páginas aqui!
-  // O Footer vai criar os links automaticamente baseado nesta lista.
   const linksNavegacao = [
     { nome: "Início", path: "/" },
     { nome: "Histórico de Corridas", path: "/corridas" },
@@ -35,18 +39,11 @@ export default function Footer() {
           <div className="space-y-4">
             <h4 className="text-lg font-bold text-white uppercase tracking-wider">Navegação</h4>
             <div className="flex flex-col gap-2 text-gray-400">
-              
-              {/* Gera os links automaticamente baseado na lista acima */}
               {linksNavegacao.map((link, index) => (
-                <Link 
-                  key={index} 
-                  to={link.path} 
-                  className="hover:text-red-500 transition-colors"
-                >
+                <Link key={index} to={link.path} className="hover:text-red-500 transition-colors">
                   {link.nome}
                 </Link>
               ))}
-
             </div>
           </div>
 
@@ -54,56 +51,33 @@ export default function Footer() {
           <div className="space-y-4">
             <h4 className="text-lg font-bold text-white uppercase tracking-wider">Conectar</h4>
             <div className="flex flex-col gap-3">
-              
-              {/* YouTube */}
-              <a 
-                href="https://www.youtube.com/@FulLshoT" 
-                target="_blank" rel="noreferrer"
-                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
-              >
+              <a href="https://www.youtube.com/@FulLshoT" target="_blank" rel="noreferrer" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
                 <span className="bg-red-600 text-white px-2 py-0.5 rounded text-xs font-bold w-8 text-center">YT</span>
                 YouTube Channel
               </a>
-
-              {/* Instagram */}
-              <a 
-                href="https://instagram.com/fullshotz" 
-                target="_blank" rel="noreferrer"
-                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
-              >
+              <a href="https://instagram.com/fullshotz" target="_blank" rel="noreferrer" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
                 <span className="bg-pink-600 text-white px-2 py-0.5 rounded text-xs font-bold w-8 text-center">IG</span>
                 Instagram
               </a>
-
-              {/* TikTok (Novo) */}
-              <a 
-                href="https://tiktok.com/@simracingfullshot" 
-                target="_blank" rel="noreferrer"
-                className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
-              >
+              <a href="https://tiktok.com/@simracingfullshot" target="_blank" rel="noreferrer" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
                 <span className="bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded text-xs font-bold w-8 text-center border border-cyan-800">TK</span>
                 TikTok
               </a>
-
-              {/* Email Atualizado */}
               <p className="text-gray-500 pt-2 text-xs sm:text-sm">
                 Contacto: <br/>
                 <a href="mailto:fullshotgameplay@gmail.com" className="text-gray-300 hover:text-red-500 transition-colors">
                   fullshotgameplay@gmail.com
                 </a>
               </p>
-
             </div>
           </div>
-
         </div>
 
-        {/* COPYRIGHT (Fundo do Rodapé) */}
+        {/* COPYRIGHT */}
         <div className="mt-12 pt-8 border-t border-neutral-800 text-center text-xs text-gray-600">
           <p>© {anoAtual} Diogo "FulLshoT" Rodrigues. Todos os direitos reservados.</p>
           <p className="mt-1 font-medium text-gray-500">Powered by <span className="text-red-800">SimRacing Passion</span>.</p>
         </div>
-
       </div>
     </footer>
   );

@@ -1,3 +1,9 @@
+/* 🔴 REGRAS DA SECÇÃO DE NOTÍCIAS:
+   1. TIMEOUT: O fetch TEM de ter um AbortController com timeout (ex: 15s).
+   2. FALLBACK DE ERRO: Se a API falhar, mostrar mensagem amigável e botão de retry.
+   3. FILTROS: O sistema de filtro (WRC, iRacing) é feito no Frontend (filteredList).
+   4. AUTO-REFRESH: Atualiza a cada 2 minutos.
+*/
 import React, { useEffect, useState } from "react";
 
 const FALLBACK_IMAGE = "https://placehold.co/600x400/1a1a1a/red?text=SimRacing";

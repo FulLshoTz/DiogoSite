@@ -1,3 +1,12 @@
+"""
+🔴 REGRAS DO SERVIDOR (NÃO REMOVER LÓGICA):
+   1. SETUP: Inicializa o Flask e carrega as variáveis de ambiente.
+   2. CORS: Deve SEMPRE permitir as origens:
+      - Site Oficial (https://diogorodrigues.pt)
+      - Localhost (http://localhost:5173) para desenvolvimento.
+   3. PING: Mantém a rota '/api/ping' para o Health Check do Render.
+"""
+
 import os
 from flask import Flask, jsonify
 from flask_cors import CORS

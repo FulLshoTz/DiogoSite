@@ -1,3 +1,11 @@
+"""
+🔴 REGRAS DESTE MÓDULO (NÃO REMOVER LÓGICA):
+   1. CACHE OBRIGATÓRIO: Todas as rotas (videos, live, channel) TÊM de verificar a cache global antes de chamar a API.
+   2. QUOTA DO YOUTUBE: A busca de vídeos e live custa 100 pontos. Não remover a lógica de 'CACHE_DURATION_VIDEOS' (30 min).
+   3. FALLBACK: Se a API der erro (ex: quota excedida), o código deve tentar servir os dados antigos da cache em vez de falhar.
+   4. LIMITES: Manter o parametro 'limit' nos videos para não trazer o canal todo.
+"""
+
 import time
 from flask import Blueprint, jsonify, request
 from src.utils.youtube_api import (
@@ -12,7 +20,6 @@ youtube_bp = Blueprint("youtube", __name__)
 # ============================================================
 # 🧠 SISTEMA DE CACHE (Memória Temporária)
 # ============================================================
-# Tempos em segundos:
 CACHE_DURATION_VIDEOS = 30 * 60  # 30 min (Poupa muita quota!)
 CACHE_DURATION_NEWS = 15 * 60    # 15 min
 CACHE_DURATION_LIVE = 2 * 60     # 2 min (Para detetar lives rápido)
@@ -44,7 +51,7 @@ def channel_info():
         cache["channel"]["last_updated"] = current_time
         return jsonify(data)
     
-    # 3. Se a API falhar, usa a memória antiga (Melhor que dar erro)
+    # 3. Fallback
     if cache["channel"]["data"]:
         return jsonify(cache["channel"]["data"])
         
@@ -54,7 +61,6 @@ def channel_info():
 def live_status():
     current_time = time.time()
 
-    # Verifica Cache (Live check é barato, mas convém ter algum cache)
     if cache["live"]["data"] and (current_time - cache["live"]["last_updated"] < CACHE_DURATION_LIVE):
         return jsonify(cache["live"]["data"])
 
@@ -71,7 +77,7 @@ def latest_videos():
     current_time = time.time()
     limit = int(request.args.get("limit", 6))
 
-    # 1. Verifica Cache (IMPORTANTE: A busca custa 100 pontos!)
+    # 1. Verifica Cache (CRÍTICO: A busca custa 100 pontos!)
     if cache["videos"]["data"] and (current_time - cache["videos"]["last_updated"] < CACHE_DURATION_VIDEOS):
         print(" ⚡ (CACHE) A servir vídeos da memória...")
         return jsonify(cache["videos"]["data"])
@@ -95,7 +101,6 @@ def latest_videos():
 def simracing_news():
     current_time = time.time()
 
-    # Verifica Cache Notícias
     if cache["news"]["data"] and (current_time - cache["news"]["last_updated"] < CACHE_DURATION_NEWS):
         print(" ⚡ (CACHE) A servir notícias...")
         return jsonify(cache["news"]["data"])

@@ -1,3 +1,8 @@
+/* 🔴 REGRAS DO HEADER (TOP BAR):
+   1. API: Faz fetch a '/api/live-status' e '/api/channel-info' ao iniciar.
+   2. RESPONSIVIDADE: Ajusta o tamanho do logo e texto entre Mobile (sm:) e Desktop.
+   3. STATUS: Mostra a bola vermelha a piscar (animate-pulse/live-ring) APENAS se isLive for true.
+*/
 import React, { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import logo from "../assets/logo.png";
