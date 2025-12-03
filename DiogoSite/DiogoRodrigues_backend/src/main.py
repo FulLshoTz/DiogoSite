@@ -9,9 +9,9 @@ from flask_cors import CORS
 def create_app():
     app = Flask(__name__)
 
-    # CORS permitido só para o teu domínio
+   # CORS permitido para o site oficial E para o teu localhost (testes)
     CORS(app, resources={
-        r"/api/*": {"origins": "https://diogorodrigues.pt"}
+        r"/api/*": {"origins": ["https://diogorodrigues.pt", "http://localhost:5173"]}
     })
 
     # BLUEPRINT (rotas de YouTube + Notícias)

@@ -1,0 +1,16 @@
+# --- GERAL ---
+.DS_Store
+.env
+
+# --- FRONTEND (Node/React) ---
+node_modules/
+dist/
+build/
+.vscode/
+
+# --- BACKEND (Python) ---
+__pycache__/
+*.pyc
+venv/
+env/
+.pytest_cache/
