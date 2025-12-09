@@ -46,8 +46,7 @@ export default function Header() {
 
   const links = [
     { to: "/", label: "INÍCIO" },
-    { to: "/corridas", label: "CORRIDAS" },
-    { to: "/circuitos", label: "CIRCUITOS" },
+    { to: "/treino-analise", label: "TREINO & ANÁLISE" },
     { to: "/definicoes", label: "DEFINIÇÕES" },
   ];
 

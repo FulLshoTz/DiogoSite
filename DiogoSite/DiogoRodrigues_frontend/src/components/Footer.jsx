@@ -37,7 +37,7 @@ export default function Footer() {
 
           {/* COLUNA 2: NAVEGAÇÃO DINÂMICA */}
           <div className="space-y-4">
-            <h4 className="text-lg font-bold text-white uppercase tracking-wider">Navegação</h4>
+            <h4 className="text-lg font-bold text-white uppercase tracking-wider">Navegação rápida</h4>
             <div className="flex flex-col gap-2 text-gray-400">
               {linksNavegacao.map((link, index) => (
                 <Link key={index} to={link.path} className="hover:text-red-500 transition-colors">
@@ -49,18 +49,26 @@ export default function Footer() {
 
           {/* COLUNA 3: SOCIAL & CONTACTOS */}
           <div className="space-y-4">
-            <h4 className="text-lg font-bold text-white uppercase tracking-wider">Conectar</h4>
+            <h4 className="text-lg font-bold text-white uppercase tracking-wider">Contactos</h4>
             <div className="flex flex-col gap-3">
               <a href="https://www.youtube.com/@FulLshoT" target="_blank" rel="noreferrer" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
-                <span className="bg-red-600 text-white px-2 py-0.5 rounded text-xs font-bold w-8 text-center">YT</span>
+                <svg className="w-8 h-auto" viewBox="0 0 28 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M27.52 3.09C27.18 1.87 26.13.82 24.91.48 22.73 0 14 0 14 0S5.27 0 3.09.48C1.87.82.82 1.87.48 3.09 0 5.27 0 10 0 10s0 4.73.48 6.91c.34 1.22 1.39 2.27 2.61 2.61C5.27 20 14 20 14 20s8.73 0 10.91-.48c1.22-.34 2.27-1.39 2.61-2.61C28 14.73 28 10 28 10s0-4.73-.48-6.91zM11.2 14V6l7.2 4-7.2 4z" fill="#FF0000"/>
+                </svg>
                 YouTube Channel
               </a>
               <a href="https://instagram.com/fullshotz" target="_blank" rel="noreferrer" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
-                <span className="bg-pink-600 text-white px-2 py-0.5 rounded text-xs font-bold w-8 text-center">IG</span>
+                <svg className="w-8 h-8" viewBox="0 0 448 512" fill="#DB2777" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M224.1 141c-63.6 0-114.9 51.3-114.9 114.9s51.3 114.9 114.9 114.9S339 319.5 339 255.9 287.7 141 224.1 141zm0 189.6c-41.1 0-74.7-33.5-74.7-74.7s33.5-74.7 74.7-74.7 74.7 33.5 74.7 74.7-33.6 74.7-74.7 74.7zm146.4-194.3c0 14.9-12 26.8-26.8 26.8-14.9 0-26.8-12-26.8-26.8s12-26.8 26.8-26.8 26.8 12 26.8 26.8zm76.1 27.2c-1.7-35.9-9.9-67.7-36.2-93.9-26.2-26.2-58-34.4-93.9-36.2-37-2.1-147.9-2.1-184.9 0-35.8 1.7-67.6 9.9-93.9 36.1s-34.4 58-36.2 93.9c-2.1 37-2.1 147.9 0 184.9 1.7 35.9 9.9 67.7 36.2 93.9s58 34.4 93.9 36.2c37 2.1 147.9 2.1 184.9 0 35.9-1.7 67.7-9.9 93.9-36.2 26.2-26.2 34.4-58 36.2-93.9 2.1-37 2.1-147.8 0-184.8z"/>
+                </svg>
                 Instagram
               </a>
               <a href="https://tiktok.com/@simracingfullshot" target="_blank" rel="noreferrer" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
-                <span className="bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded text-xs font-bold w-8 text-center border border-cyan-800">TK</span>
+                <svg className="w-8 h-8" viewBox="0 0 285 330" xmlns="http://www.w3.org/2000/svg">
+                    <path fill="#00f2ea" d="M219.2,0H285V119.53a47.32,47.32,0,0,1-41,46.21,42.23,42.23,0,0,1-4.22.42,47.28,47.28,0,0,1-47.28-47.28V47.28H126.83a47.28,47.28,0,1,1,0-94.56h44.13A47.28,47.28,0,0,1,219.2,0Z"/>
+                    <path fill="#ff0050" d="M219.2,0h65.79V119.53a47.32,47.32,0,0,1-41,46.21,42.23,42.23,0,0,1-4.22.42,47.28,47.28,0,0,1-47.28-47.28V47.28H126.83a47.28,47.28,0,1,1,0-94.56h44.13A47.28,47.28,0,0,1,219.2,0Z" transform="translate(-13.43 -20.6)"/>
+                    <path fill="#000000" d="M219.2,0h65.79V119.53a47.32,47.32,0,0,1-41,46.21,42.23,42.23,0,0,1-4.22.42,47.28,47.28,0,0,1-47.28-47.28V0H126.83a47.28,47.28,0,1,1,0-94.56h44.13A47.28,47.28,0,0,1,219.2,0Z" transform="translate(6.57 9.4)"/>
+                </svg>
                 TikTok
               </a>
               <p className="text-gray-500 pt-2 text-xs sm:text-sm">

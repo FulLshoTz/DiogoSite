@@ -100,7 +100,7 @@ export default function NoticiasSection() {
             <path d="M480 32H96C43 32 0 75 0 128v256c0 53 43 96 96 96h384c53 0 96-43 96-96V128C576 75 533 32 480 32z" />
           </svg>
           <h3 className="text-2xl font-bold tracking-wide" style={{ fontFamily: "RushDriver" }}>
-            Destaques SimRacing
+            Últimas Notícias de SimRacing
           </h3>
           <div className="flex-1 h-[2px] bg-red-600"></div>
         </div>

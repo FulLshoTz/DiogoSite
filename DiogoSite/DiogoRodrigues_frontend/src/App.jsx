@@ -6,8 +6,7 @@
 import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
-import Corridas from "./pages/Corridas";
-import Circuitos from "./pages/Circuitos";
+import TreinoAnalise from "./pages/TreinoAnalise";
 import Definicoes from "./pages/Definicoes";
 import Header from "./components/Header";
 import Background from "./components/Background";
@@ -36,8 +35,7 @@ function App() {
             <main className="flex-1 pt-32 sm:pt-40 px-4"> 
               <Routes>
                 <Route path="/" element={<Home />} />
-                <Route path="/corridas" element={<Corridas />} />
-                <Route path="/circuitos" element={<Circuitos />} />
+                <Route path="/treino-analise" element={<TreinoAnalise />} />
                 <Route path="/definicoes" element={<Definicoes />} />
               </Routes>
             </main>
