@@ -67,7 +67,9 @@ const StintAnalysis = () => {
   const [selectedLaps, setSelectedLaps] = useState([]);
   const [fsGridActive, setFsGridActive] = useState(false);
   const [fullscreenSource, setFullscreenSource] = useState(null); // 'grid', or lapId
+  const [fullscreenTime, setFullscreenTime] = useState(null);
   const [fsGridIsPlaying, setFsGridIsPlaying] = useState(false);
+  const [fsGridIndividualPlayState, setFsGridIndividualPlayState] = useState({});
 
 
   // Sync on fullscreen exit
@@ -97,6 +99,7 @@ const StintAnalysis = () => {
             
             setFullscreenSource(null);
             setFsGridActive(false); // Ensure grid is hidden
+            setFullscreenTime(null);
         }
     };
 
@@ -200,6 +203,15 @@ const StintAnalysis = () => {
   const onPlayerReady = (event, lapId, startTime) => {
     const player = event.target;
     playerRefs.current[lapId] = player;
+    
+    let effectiveStartTime = startTime;
+    // If entering single-lap fullscreen, use the captured time and autoplay
+    if (fullscreenSource === lapId && typeof fullscreenTime === 'number') {
+        effectiveStartTime = fullscreenTime;
+        player.playVideo();
+    }
+
+    player.seekTo(effectiveStartTime, true);
     player.setPlaybackQuality(quality);
     
     const volume = volumes[lapId];
@@ -210,12 +222,11 @@ const StintAnalysis = () => {
         player.unMute();
     }
 
-    player.seekTo(startTime, true);
     setPlayersReady(prev => ({ ...prev, [lapId]: true }));
   };
 
-  const handleVolumeChange = (lapId, newVolume) => {
-    const player = playerRefs.current[lapId];
+  const handleVolumeChange = (lapId, newVolume, refs = playerRefs) => {
+    const player = refs.current[lapId];
     if (!player) return;
 
     setVolumes(prev => ({ ...prev, [lapId]: newVolume }));
@@ -228,25 +239,28 @@ const StintAnalysis = () => {
     }
   };
 
-  const handleFullscreen = (lapId) => {
-    setFullscreenSource(lapId); // Track which video entered fullscreen
+  const handleFullscreen = async (lapId) => {
     const player = playerRefs.current[lapId];
-    if (player && typeof player.getIframe === 'function') {
-      const iframe = player.getIframe();
-      if (iframe.requestFullscreen) {
-        iframe.requestFullscreen();
-      } else if (iframe.mozRequestFullScreen) { // Firefox
-        iframe.mozRequestFullScreen();
-      } else if (iframe.webkitRequestFullscreen) { // Chrome, Safari, Opera
-        iframe.webkitRequestFullscreen();
-      } else if (iframe.msRequestFullscreen) { // IE/Edge
-        iframe.msRequestFullscreen();
-      }
+    if (player && typeof player.getCurrentTime === 'function') {
+        const currentTime = await player.getCurrentTime();
+        setFullscreenTime(currentTime);
+        setFullscreenSource(lapId); // Track which video entered fullscreen
+        
+        const iframe = player.getIframe();
+        if (iframe.requestFullscreen) {
+            iframe.requestFullscreen();
+        } else if (iframe.mozRequestFullScreen) { // Firefox
+            iframe.mozRequestFullScreen();
+        } else if (iframe.webkitRequestFullscreen) { // Chrome, Safari, Opera
+            iframe.webkitRequestFullscreen();
+        } else if (iframe.msRequestFullscreen) { // IE/Edge
+            iframe.msRequestFullscreen();
+        }
     }
   };
 
-  const nudgePlayer = async (lapId, amount) => {
-    const player = playerRefs.current[lapId];
+  const nudgePlayer = async (lapId, amount, refs = playerRefs) => {
+    const player = refs.current[lapId];
     if (player && typeof player.getCurrentTime === 'function') {
       const currentTime = await player.getCurrentTime();
       player.seekTo(currentTime + amount, true);
@@ -285,28 +299,52 @@ const StintAnalysis = () => {
     );
   };
 
-  const handleEnterFsGrid = async () => {
-      if (selectedLaps.length === 0) return;
-      
-      const mainPlayer = playerRefs.current[selectedLaps[0]];
-      if (mainPlayer && typeof mainPlayer.getCurrentTime === 'function') {
-          const currentTime = await mainPlayer.getCurrentTime();
-          
-          fsGridPlayerRefs.current = {};
-          
-          // The start time for the new players is handled in their `opts` prop.
-          // No need to update the main lapData state here.
+  const handleSelectAll = () => {
+    if (selectedLaps.length === lapData.length) {
+      setSelectedLaps([]); // Deselect all
+    } else {
+      setSelectedLaps(lapData.map(lap => lap.id)); // Select all
+    }
+  };
 
-          setFsGridActive(true);
-          setFullscreenSource('grid');
-          setFsGridIsPlaying(isPlaying); // Sync playing state
-          
-          if (fsGridRef.current) {
-              fsGridRef.current.requestFullscreen().catch(err => {
-                  console.error("Error attempting to enable full-screen mode:", err);
-              });
-          }
-      }
+  const handleEnterFsGrid = async () => {
+    if (selectedLaps.length === 0) return;
+
+    const timeCapturePromises = selectedLaps.map(async (lapId) => {
+        const player = playerRefs.current[lapId];
+        if (player && typeof player.getCurrentTime === 'function') {
+            const time = await player.getCurrentTime();
+            return { id: lapId, time: time };
+        }
+        return { id: lapId, time: null };
+    });
+
+    const capturedTimes = await Promise.all(timeCapturePromises);
+    const timeMap = capturedTimes.reduce((acc, curr) => {
+        if (curr.time !== null) {
+            acc[curr.id] = curr.time;
+        }
+        return acc;
+    }, {});
+      
+    const initialFsPlayState = selectedLaps.reduce((acc, lapId) => {
+        acc[lapId] = true; // Start as playing
+        return acc;
+    }, {});
+    setFsGridIndividualPlayState(initialFsPlayState);
+
+    setFullscreenTime(timeMap);
+    fsGridPlayerRefs.current = {};
+
+    setFsGridActive(true);
+    setFullscreenSource('grid');
+    setFsGridIsPlaying(true); // Autoplay on entry
+    
+    if (fsGridRef.current) {
+        fsGridRef.current.requestFullscreen().catch(err => {
+            console.error("Error attempting to enable full-screen mode:", err);
+        });
+    }
   };
 
   const handleExitFsGrid = () => {
@@ -319,6 +357,14 @@ const StintAnalysis = () => {
   const onFsGridPlayerReady = (event, lapId) => {
       const player = event.target;
       fsGridPlayerRefs.current[lapId] = player;
+
+      // On ready, seek to the captured time
+      if (fullscreenSource === 'grid' && fullscreenTime && typeof fullscreenTime === 'object') {
+          const seekTime = fullscreenTime[lapId];
+          if (typeof seekTime === 'number') {
+              player.seekTo(seekTime, true);
+          }
+      }
 
       // Set volume for the fullscreen player
       const volume = volumes[lapId];
@@ -338,27 +384,63 @@ const StintAnalysis = () => {
   };
 
   const handleFsGridPlayPause = () => {
-    fsGridIsPlaying ? syncAndExecute('pauseVideo', fsGridPlayerRefs) : syncAndExecute('playVideo', fsGridPlayerRefs);
-    setFsGridIsPlaying(!fsGridIsPlaying);
+    const allPlaying = Object.values(fsGridIndividualPlayState).every(s => s);
+    if (allPlaying) {
+        syncAndExecute('pauseVideo', fsGridPlayerRefs);
+        const newPlayState = Object.keys(fsGridIndividualPlayState).reduce((acc, key) => ({ ...acc, [key]: false }), {});
+        setFsGridIndividualPlayState(newPlayState);
+    } else {
+        syncAndExecute('playVideo', fsGridPlayerRefs);
+        const newPlayState = Object.keys(fsGridIndividualPlayState).reduce((acc, key) => ({ ...acc, [key]: true }), {});
+        setFsGridIndividualPlayState(newPlayState);
+    }
+    setFsGridIsPlaying(!allPlaying);
+  };
+
+  const handleFsGridIndividualPlayPause = (lapId) => {
+    const player = fsGridPlayerRefs.current[lapId];
+    if (!player) return;
+
+    const isCurrentlyPlaying = fsGridIndividualPlayState[lapId];
+    isCurrentlyPlaying ? player.pauseVideo() : player.playVideo();
+
+    setFsGridIndividualPlayState(prev => {
+        const newState = { ...prev, [lapId]: !isCurrentlyPlaying };
+        const anyPlaying = Object.values(newState).some(s => s);
+        setFsGridIsPlaying(anyPlaying);
+        return newState;
+    });
   };
 
 
-  const playerOpts = { height: '100%', width: '100%', playerVars: { controls: 0, rel: 0, autoplay: 1 }};
+  const playerOpts = { height: '100%', width: '100%', playerVars: { controls: 0, rel: 0, autoplay: 1, modestbranding: 1 }};
 
   if (showGrid) {
     return (
       <>
         <div className="bg-neutral-950 p-4 rounded-xl border border-neutral-800 animate-in fade-in duration-500">
             <div className="sticky top-0 z-50 bg-neutral-950 py-3 mb-4">
-                <div className={`flex items-center justify-center flex-wrap gap-1 sm:gap-3 bg-neutral-900 p-3 rounded-lg ${isLoading ? 'cursor-not-allowed' : ''}`}>
-                    <button onClick={() => seek(-15)} disabled={isLoading} className="hidden sm:inline-block disabled:opacity-50 text-white hover:text-red-500 transition-colors p-2 rounded-full"><FaBackward className="mr-1 inline-block"/> 15s</button>
-                    <button onClick={() => seek(-5)} disabled={isLoading} className="disabled:opacity-50 text-white hover:text-red-500 transition-colors p-2 rounded-full"><FaBackward className="mr-1 inline-block"/> 5s</button>
-                    <button onClick={() => seek(-1)} disabled={isLoading} className="disabled:opacity-50 text-white hover:text-red-500 transition-colors p-2 rounded-full"><FaBackward className="text-sm"/></button>
-                    <button onClick={handlePlayPause} disabled={isLoading} className="disabled:opacity-50 text-white bg-red-600 hover:bg-red-700 transition-colors p-4 rounded-full text-xl shadow-lg">{isPlaying ? <FaPause/> : <FaPlay/>}</button>
-                    <button onClick={() => seek(1)} disabled={isLoading} className="disabled:opacity-50 text-white hover:text-red-500 transition-colors p-2 rounded-full"><FaForward className="text-sm"/></button>
-                    <button onClick={() => seek(5)} disabled={isLoading} className="disabled:opacity-50 text-white hover:text-red-500 transition-colors p-2 rounded-full">5s <FaForward className="ml-1 inline-block"/></button>
-                    <button onClick={() => seek(15)} disabled={isLoading} className="hidden sm:inline-block disabled:opacity-50 text-white hover:text-red-500 transition-colors p-2 rounded-full">15s <FaForward className="ml-1 inline-block"/></button>
-                    <button onClick={handleEnterFsGrid} disabled={selectedLaps.length === 0} className="ml-4 bg-blue-600 text-white px-4 py-2 rounded-lg disabled:bg-neutral-600 disabled:cursor-not-allowed"><FaCheckSquare className="inline-block mr-2"/> Ver Selecionados ({selectedLaps.length})</button>
+                <div className={`flex items-center justify-between flex-wrap gap-1 sm:gap-3 bg-neutral-900 p-3 rounded-lg ${isLoading ? 'cursor-not-allowed' : ''}`}>
+                    <button onClick={handleBack} className="text-sm text-neutral-400 hover:text-white transition-colors">« Voltar</button>
+                    
+                    <div className="flex items-center justify-center flex-grow">
+                        <button onClick={() => seek(-15)} disabled={isLoading} className="hidden sm:inline-block disabled:opacity-50 text-white hover:text-red-500 transition-colors p-2 rounded-full"><FaBackward className="mr-1 inline-block"/> 15s</button>
+                        <button onClick={() => seek(-5)} disabled={isLoading} className="disabled:opacity-50 text-white hover:text-red-500 transition-colors p-2 rounded-full"><FaBackward className="mr-1 inline-block"/> 5s</button>
+                        <button onClick={() => seek(-1)} disabled={isLoading} className="disabled:opacity-50 text-white hover:text-red-500 transition-colors p-2 rounded-full"><FaBackward className="text-sm"/></button>
+                        <button onClick={handlePlayPause} disabled={isLoading} className="disabled:opacity-50 text-white bg-red-600 hover:bg-red-700 transition-colors p-4 rounded-full text-xl shadow-lg">{isPlaying ? <FaPause/> : <FaPlay/>}</button>
+                        <button onClick={() => seek(1)} disabled={isLoading} className="disabled:opacity-50 text-white hover:text-red-500 transition-colors p-2 rounded-full"><FaForward className="text-sm"/></button>
+                        <button onClick={() => seek(5)} disabled={isLoading} className="disabled:opacity-50 text-white hover:text-red-500 transition-colors p-2 rounded-full">5s <FaForward className="ml-1 inline-block"/></button>
+                        <button onClick={() => seek(15)} disabled={isLoading} className="hidden sm:inline-block disabled:opacity-50 text-white hover:text-red-500 transition-colors p-2 rounded-full">15s <FaForward className="ml-1 inline-block"/></button>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <button onClick={handleSelectAll} className="text-sm bg-neutral-700 hover:bg-neutral-600 text-white font-semibold py-2 px-3 rounded-md">
+                            {selectedLaps.length === lapData.length ? 'Limpar' : 'Todos'}
+                        </button>
+                        <button onClick={handleEnterFsGrid} disabled={selectedLaps.length === 0} className="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-lg disabled:bg-neutral-600 disabled:cursor-not-allowed">
+                            <FaCheckSquare className="inline-block mr-2"/> Ver ({selectedLaps.length})
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -366,10 +448,7 @@ const StintAnalysis = () => {
             {isLoading && ( <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 rounded-lg"><div className="flex flex-col items-center gap-2 text-white"><svg className="animate-spin h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>A carregar...</span></div></div>)}
             <div className="grid grid-cols-1 gap-6">
                 {lapData.map((lap) => (
-                <div key={lap.id} className="flex flex-col sm:flex-row items-center gap-4 p-2 rounded-lg bg-neutral-900 border border-neutral-800">
-                    <div className="flex-shrink-0">
-                        <input type="checkbox" checked={selectedLaps.includes(lap.id)} onChange={() => handleLapSelect(lap.id)} className="form-checkbox h-6 w-6 bg-neutral-700 border-neutral-600 text-red-600 focus:ring-red-500" />
-                    </div>
+                <div key={lap.id} className="flex flex-col sm:flex-row items-start gap-4 p-2 rounded-lg bg-neutral-900 border border-neutral-800">
                     <div className={`w-full sm:w-2/3 relative aspect-video bg-black rounded-lg border border-neutral-700 overflow-hidden group transition-opacity duration-500`}>
                         <div className="absolute top-1 left-2 z-10 bg-black/50 text-white text-xs font-bold px-2 py-1 rounded">Volta {lap.id + 1}</div>
                         <YouTube videoId={videoId} opts={{...playerOpts, playerVars: {...playerOpts.playerVars, start: lap.startTime}}} onReady={(e) => onPlayerReady(e, lap.id, lap.startTime)} className="w-full h-full" />
@@ -385,7 +464,10 @@ const StintAnalysis = () => {
                             <button onClick={() => handleFullscreen(lap.id)} className="bg-black/50 text-white p-2 rounded-full hover:bg-black/75 transition-colors" title="Fullscreen"><FaExpand size={12}/></button>
                         </div>
                     </div>
-                    <div className="w-full sm:w-1/3 space-y-3 p-2">
+                    <div className="w-full sm:w-1/3 space-y-2 p-2">
+                        <div className="flex justify-end">
+                            <input type="checkbox" checked={selectedLaps.includes(lap.id)} onChange={() => handleLapSelect(lap.id)} className="form-checkbox h-6 w-6 bg-neutral-700 border-neutral-600 text-red-600 focus:ring-red-500 rounded-md" />
+                        </div>
                         <div className="flex items-center gap-2">
                             <div>
                                 <label className="text-sm font-semibold text-neutral-400 block">Início no Vídeo</label>
@@ -411,8 +493,20 @@ const StintAnalysis = () => {
             <div ref={fsGridRef} className="fixed inset-0 bg-black z-[100] flex flex-col">
                 <div className={`grid gap-1 flex-grow grid-cols-${Math.ceil(Math.sqrt(selectedLaps.length))}`}>
                     {lapData.filter(lap => selectedLaps.includes(lap.id)).map(lap => (
-                        <div key={`fs-${lap.id}`} className="relative w-full h-full">
+                        <div key={`fs-${lap.id}`} className="relative w-full h-full group">
+                            <div className="absolute top-1 left-2 z-20 bg-black/50 text-white text-xs font-bold px-2 py-1 rounded">Volta {lap.id + 1}</div>
                             <YouTube videoId={videoId} opts={{...playerOpts, playerVars: {...playerOpts.playerVars, start: lap.startTime}}} onReady={(e) => onFsGridPlayerReady(e, lap.id)} className="w-full h-full" />
+                            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center justify-center gap-1 bg-black/50 p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                                <button onClick={() => handleFsGridIndividualPlayPause(lap.id)} className="text-white p-2 rounded-full hover:bg-neutral-700" title={fsGridIndividualPlayState[lap.id] ? "Pause" : "Play"}>{fsGridIndividualPlayState[lap.id] ? <FaPause size={12}/> : <FaPlay size={12}/>}</button>
+                                <button onClick={() => nudgePlayer(lap.id, -5, fsGridPlayerRefs)} className="text-white p-2 rounded-full hover:bg-neutral-700" title="-5s"><FaBackward size={12}/></button>
+                                <button onClick={() => nudgePlayer(lap.id, -0.1, fsGridPlayerRefs)} className="text-white p-2 rounded-full hover:bg-neutral-700" title="-0.1s"><FaAngleDoubleLeft size={10}/></button>
+                                <button onClick={() => nudgePlayer(lap.id, 0.1, fsGridPlayerRefs)} className="text-white p-2 rounded-full hover:bg-neutral-700" title="+0.1s"><FaAngleDoubleRight size={10}/></button>
+                                <button onClick={() => nudgePlayer(lap.id, 5, fsGridPlayerRefs)} className="text-white p-2 rounded-full hover:bg-neutral-700" title="+5s"><FaForward size={12}/></button>
+                                <div className="text-white p-2 rounded-full hover:bg-neutral-700 flex items-center gap-1">
+                                    {volumes[lap.id] > 0 ? <FaVolumeUp size={14}/> : <FaVolumeMute size={14}/>}
+                                    <input type="range" min="0" max="100" value={volumes[lap.id]} onChange={(e) => handleVolumeChange(lap.id, parseInt(e.target.value, 10), fsGridPlayerRefs)} className="w-20 h-2 accent-red-600"/>
+                                </div>
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -422,8 +516,10 @@ const StintAnalysis = () => {
                     <button onClick={handleFsGridPlayPause} className="text-white bg-red-600 hover:bg-red-700 transition-colors p-4 rounded-full text-xl shadow-lg">{fsGridIsPlaying ? <FaPause/> : <FaPlay/>}</button>
                     <button onClick={() => seek(5, fsGridPlayerRefs)} className="text-white hover:text-red-500 transition-colors p-2 rounded-full">5s <FaForward className="ml-1 inline-block"/></button>
                     <button onClick={() => seek(15, fsGridPlayerRefs)} className="text-white hover:text-red-500 transition-colors p-2 rounded-full">15s <FaForward className="ml-1 inline-block"/></button>
-                    <button onClick={handleExitFsGrid} className="ml-8 bg-blue-600 text-white px-4 py-2 rounded-lg"><FaTimesCircle className="inline-block mr-2"/> Sair</button>
                 </div>
+                <button onClick={handleExitFsGrid} className="absolute bottom-4 right-4 border border-white text-white px-4 py-2 rounded-lg flex items-center hover:bg-white hover:text-black transition-colors">
+                    <FaTimesCircle className="inline-block mr-2"/> Sair
+                </button>
             </div>
         )}
       </>
