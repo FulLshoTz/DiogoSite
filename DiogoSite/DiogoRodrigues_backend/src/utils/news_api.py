@@ -2,6 +2,7 @@ import feedparser
 from datetime import datetime, timedelta
 import time
 import re
+import socket
 
 # ==============================================================================
 # LISTA DE FONTES (Filtrada para sites com RSS válidos e notícias reais)
@@ -104,40 +105,48 @@ def clean_html(raw_html):
 def get_simracing_news():
     articles = []
     
-    for source_name, url in FEEDS:
-        try:
-            # Timeout curto para não prender o site se um feed estiver lento
-            # feedparser não tem timeout nativo fácil, mas geralmente é rápido.
-            feed = feedparser.parse(url)
-            
-            # Limite de segurança: 5 notícias por fonte para não encher de lixo
-            for entry in feed.entries[:5]: 
-                
-                # FILTRO DE DATA
-                if not is_recent(entry):
-                    continue
+    # Guarda o timeout original para restaurá-lo no final
+    original_timeout = socket.getdefaulttimeout()
+    # Define um timeout global de 10 segundos para todas as operações de rede
+    socket.setdefaulttimeout(10)
 
-                img = extract_thumbnail(entry)
+    try:
+        for source_name, url in FEEDS:
+            try:
+                feed = feedparser.parse(url)
                 
-                # Limpeza da descrição
-                raw_summary = getattr(entry, "summary", "") or getattr(entry, "title", "")
-                description = clean_html(raw_summary)[:200] + "..."
-                
-                # Timestamp seguro
-                pub_date = entry.get("published_parsed") or entry.get("updated_parsed") or time.gmtime()
-                timestamp = time.mktime(pub_date)
+                # Limite de segurança: 5 notícias por fonte para não encher de lixo
+                for entry in feed.entries[:5]: 
+                    
+                    # FILTRO DE DATA
+                    if not is_recent(entry):
+                        continue
 
-                articles.append({
-                    "title": entry.title,
-                    "url": entry.link,
-                    "description": description,
-                    "image": img,
-                    "source": source_name,
-                    "timestamp": timestamp
-                })
-        except Exception as e:
-            print(f"Erro ao ler feed {source_name}: {e}")
-            continue
+                    img = extract_thumbnail(entry)
+                    
+                    # Limpeza da descrição
+                    raw_summary = getattr(entry, "summary", "") or getattr(entry, "title", "")
+                    description = clean_html(raw_summary)[:200] + "..."
+                    
+                    # Timestamp seguro
+                    pub_date = entry.get("published_parsed") or entry.get("updated_parsed") or time.gmtime()
+                    timestamp = time.mktime(pub_date)
+
+                    articles.append({
+                        "title": entry.title,
+                        "url": entry.link,
+                        "description": description,
+                        "image": img,
+                        "source": source_name,
+                        "timestamp": timestamp
+                    })
+            except Exception as e:
+                # Se ocorrer um erro (incluindo timeout), regista e continua para o próximo feed
+                print(f"Erro ao ler feed {source_name}: {e}")
+                continue
+    finally:
+        # Restaura o timeout original para não afetar outras partes da aplicação
+        socket.setdefaulttimeout(original_timeout)
 
     # Ordenar por data (mais recente primeiro)
     articles.sort(key=lambda x: x["timestamp"], reverse=True)
