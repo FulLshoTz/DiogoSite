@@ -22,8 +22,48 @@ export async function getLatestVideos() {
   return res.json();
 }
 
-/*
-  NOTA: Todas as outras chamadas à API (como as de telemetria) devem ser 
-  adicionadas aqui para manter o código organizado e garantir que funcionam
-  tanto localmente como em produção.
-*/
+/**
+ * Envia um ficheiro de telemetria para análise inicial.
+ * @param {FormData} formData O formulário de dados contendo o ficheiro.
+ * @returns {Promise<object>} Os dados da análise inicial (voltas, etc.).
+ */
+export async function analyzeTelemetry(formData) {
+  const res = await fetch(`${BACKEND_URL}/api/telemetry/analyze`, {
+    method: 'POST',
+    body: formData,
+  });
+  if (!res.ok) {
+    // Tenta ler o erro como texto, pois pode não ser JSON
+    const errorText = await res.text();
+    console.error("Falha na análise de telemetria:", res.status, errorText);
+    try {
+      // Tenta fazer parse do erro como JSON, pode ser que o backend tenha enviado um erro estruturado
+      const errorJson = JSON.parse(errorText);
+      throw new Error(errorJson.error || `Erro ${res.status}`);
+    } catch (e) {
+      // Se o parse falhar, lança o texto do erro ou um erro genérico
+      throw new Error(errorText || `Erro ${res.status}`);
+    }
+  }
+  return res.json();
+}
+
+/**
+ * Executa uma query SQL no ficheiro de telemetria especificado.
+ * @param {string} filename O nome do ficheiro no servidor.
+ * @param {string} query A query SQL a ser executada.
+ * @returns {Promise<object>} O resultado da query.
+ */
+export async function runTelemetryQuery(filename, query) {
+  const res = await fetch(`${BACKEND_URL}/api/telemetry/query`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ filename, query }),
+  });
+  if (!res.ok) {
+    const errorData = await res.json();
+    console.error("Falha na query de telemetria:", res.status, errorData);
+    throw new Error(errorData.error || `Erro ${res.status}`);
+  }
+  return res.json();
+}

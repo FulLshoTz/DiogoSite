@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import RawDataViewer from '../components/RawDataViewer';
+import { analyzeTelemetry, runTelemetryQuery } from '../services/backend';
 
 const Telemetry = () => {
   // Core data state
@@ -51,18 +52,12 @@ const Telemetry = () => {
     formData.append('telemetryFile', selectedFile);
 
     try {
-      const response = await fetch('/api/telemetry/analyze', {
-        method: 'POST',
-        body: formData,
-      });
-      const data = await response.json();
-
-      if (!response.ok) throw new Error(data.error || 'Ocorreu um erro na análise inicial.');
+      const data = await analyzeTelemetry(formData); // Usa a função do serviço
       if (!data.laps || data.laps.length === 0) {
         setError('Nenhuma volta encontrada no ficheiro de telemetria.');
       } else {
         setLaps(data.laps);
-        setTempFilename(data.temp_filename); // Save the filename for future queries
+        setTempFilename(data.temp_filename); // Guarda o nome do ficheiro para queries futuras
       }
     } catch (err) {
       setError(err.message);
@@ -82,16 +77,9 @@ const Telemetry = () => {
     setQueryResult(null);
 
     try {
-      const response = await fetch('/api/telemetry/query', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filename: tempFilename, query: queryToRun }),
-      });
-      const data = await response.json();
-
-      if (!response.ok) throw new Error(data.error || 'Ocorreu um erro na query.');
+      const data = await runTelemetryQuery(tempFilename, queryToRun); // Usa a função do serviço
       
-      // If we are listing tables, populate the dbTables state
+      // Se estamos a listar tabelas, preenche o state dbTables
       if (queryToRun.trim().toUpperCase() === 'SHOW ALL TABLES;') {
         setDbTables(data);
       } else {
