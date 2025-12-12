@@ -1,0 +1,39 @@
+INFO:apscheduler.scheduler:Adding job tentatively -- it will be properly scheduled when the scheduler starts
+INFO:apscheduler.scheduler:Added job "cleanup_old_files" to job store "default"
+INFO:apscheduler.scheduler:Scheduler started
+INFO:root:Agendador de limpeza de ficheiros iniciado (intervalo: 15 min, retenção: 30 min).
+ * Serving Flask app 'src/main'
+ * Debug mode: off
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:werkzeug:127.0.0.1 - - [12/Dec/2025 16:56:44] "POST /api/telemetry/analyze HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [12/Dec/2025 16:56:51] "POST /api/telemetry/query HTTP/1.1" 200 -
+Fatal Python error: PyEval_SaveThread: the function must be called with the GIL held, after Python initialization and before Python finalization, but the GIL is released (the current Python thread state is NULL)
+Python runtime state: initialized
+
+Thread 0x0000250c (most recent call first):
+  File "C:\Users\DiogoRodrigues\AppData\Local\Programs\Python\Python312\Lib\threading.py", line 359 in wait
+  File "C:\Users\DiogoRodrigues\AppData\Local\Programs\Python\Python312\Lib\threading.py", line 655 in wait
+  File "C:\Users\DiogoRodrigues\AppData\Local\Programs\Python\Python312\Lib\site-packages\apscheduler\schedulers\blocking.py", line 30 in _main_loop
+  File "C:\Users\DiogoRodrigues\AppData\Local\Programs\Python\Python312\Lib\threading.py", line 1012 in run
+  File "C:\Users\DiogoRodrigues\AppData\Local\Programs\Python\Python312\Lib\threading.py", line 1075 in _bootstrap_inner
+  File "C:\Users\DiogoRodrigues\AppData\Local\Programs\Python\Python312\Lib\threading.py", line 1032 in _bootstrap
+
+Thread 0x00005d70 (most recent call first):
+  File "C:\Users\DiogoRodrigues\AppData\Local\Programs\Python\Python312\Lib\selectors.py", line 314 in _select
+  File "C:\Users\DiogoRodrigues\AppData\Local\Programs\Python\Python312\Lib\selectors.py", line 323 in select
+  File "C:\Users\DiogoRodrigues\AppData\Local\Programs\Python\Python312\Lib\socketserver.py", line 235 in serve_forever
+  File "C:\Users\DiogoRodrigues\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\serving.py", line 819 in serve_forever
+  File "C:\Users\DiogoRodrigues\AppData\Local\Programs\Python\Python312\Lib\site-packages\werkzeug\serving.py", line 1125 in run_simple
+  File "C:\Users\DiogoRodrigues\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\cli.py", line 965 in run_command
+  File "C:\Users\DiogoRodrigues\AppData\Local\Programs\Python\Python312\Lib\site-packages\click\core.py", line 824 in invoke
+  File "C:\Users\DiogoRodrigues\AppData\Local\Programs\Python\Python312\Lib\site-packages\click\decorators.py", line 93 in new_func
+  File "C:\Users\DiogoRodrigues\AppData\Local\Programs\Python\Python312\Lib\site-packages\click\core.py", line 824 in invoke
+  File "C:\Users\DiogoRodrigues\AppData\Local\Programs\Python\Python312\Lib\site-packages\click\core.py", line 1269 in invoke
+  File "C:\Users\DiogoRodrigues\AppData\Local\Programs\Python\Python312\Lib\site-packages\click\core.py", line 1873 in invoke
+  File "C:\Users\DiogoRodrigues\AppData\Local\Programs\Python\Python312\Lib\site-packages\click\core.py", line 1406 in main
+  File "C:\Users\DiogoRodrigues\AppData\Local\Programs\Python\Python312\Lib\site-packages\flask\cli.py", line 1105 in main
+  File "C:\Users\DiogoRodrigues\AppData\Local\Programs\Python\Python312\Scripts\flask.exe\__main__.py", line 7 in <module>
+  File "<frozen runpy>", line 88 in _run_code
+  File "<frozen runpy>", line 198 in _run_module_as_main
