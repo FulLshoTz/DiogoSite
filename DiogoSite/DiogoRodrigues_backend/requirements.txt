@@ -1,7 +1,10 @@
+APScheduler==3.10.4
+duckdb==1.4.3
+feedparser==6.0.11
 Flask==3.0.3
 flask-cors==4.0.0
-python-dotenv==1.0.1
 gunicorn==22.0.0
+numpy
+pandas
+python-dotenv==1.0.1
 requests==2.32.3
-feedparser==6.0.11
-

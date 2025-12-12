@@ -36,9 +36,10 @@ import React, { useState } from 'react';
 import ModeSwitcher from '../components/ModeSwitcher';
 import LapComparison from '../components/LapComparison';
 import StintAnalysis from '../components/StintAnalysis';
+import Telemetry from './Telemetry';
 
 export default function TreinoAnalise() {
-  const [mode, setMode] = useState('comparison'); // 'comparison' or 'stint'
+  const [mode, setMode] = useState('telemetry'); // 'comparison', 'stint', or 'telemetry'
 
   return (
     <div className="text-white max-w-7xl mx-auto px-4 py-6">
@@ -50,6 +51,7 @@ export default function TreinoAnalise() {
 
       {mode === 'comparison' && <LapComparison />}
       {mode === 'stint' && <StintAnalysis />}
+      {mode === 'telemetry' && <Telemetry />}
       
     </div>
   );

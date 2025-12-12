@@ -1,3 +1,65 @@
+// StintAnalysis Component: In-Depth Functional & Architectural Overview
+//
+// This component is a comprehensive tool for motorsport race analysis, enabling users to synchronize and compare multiple laps from a single YouTube video. It transforms a list of lap times into a multi-video analysis dashboard.
+//
+// --- Component Architecture & State ---
+//
+// The component's logic is primarily managed by React hooks:
+// - `useState`: Manages UI state (e.g., `isLoading`, `isPlaying`), user inputs (`videoUrl`, `lapTimesInput`), and derived data (`lapData`).
+// - `useRef`: Holds persistent but non-re-rendering data, crucially the `react-youtube` player instances (`playerRefs`, `fsGridPlayerRefs`) for direct API control.
+// - `useEffect`: Handles side effects, such as:
+//   - Detecting when all players are ready (`onPlayerReady`) to enable UI controls.
+//   - Listening for the browser's 'fullscreenchange' event to synchronize the main grid's time after exiting any fullscreen mode.
+//
+// --- Key State Variables ---
+// - `lapData`: An array of objects, where each object represents a lap and stores its `id`, `duration`, and calculated `startTime` in the video. This is the central data structure for the analysis grid.
+// - `playersReady`: An object that tracks the ready status of each individual YouTube player instance.
+// - `selectedLaps`: An array of lap IDs chosen by the user for the fullscreen comparison grid.
+// - `fullscreenSource`: A state variable that tracks what is currently in fullscreen ('grid' for the comparison grid, a lap `id` for a single player, or `null`). This is crucial for correctly synchronizing time on exit.
+//
+// --- Core Functional Flow ---
+//
+// 1. **Setup & Configuration (`return`'s initial view):**
+//    - The user inputs a YouTube video URL, a master start time for the first lap (e.g., "1:04:21"), and a newline-separated list of lap times.
+//    - The `handleGenerate` function is triggered on button click.
+//
+// 2. **Analysis Grid Generation (`handleGenerate`):**
+//    - It parses the raw lap times.
+//    - It calculates the absolute `startTime` for each lap by cumulatively adding lap durations to the master start time.
+//    - This data populates the `lapData` state, which causes the main grid view to render.
+//    - It resets player states (`playersReady`, `playerRefs`) to prepare for the new set of videos.
+//
+// 3. **Main Analysis Grid (Primary View):**
+//    - A `map` over `lapData` renders a row for each lap.
+//    - Each row contains a `<YouTube>` component. Its `opts` are configured with the lap's specific `startTime`.
+//    - **Global Controls:** A sticky header has buttons that call `handlePlayPause` and `seek`. These functions iterate over all player instances in `playerRefs.current` and execute the corresponding action (e.g., `playVideo()`, `seekTo()`), ensuring synchronized playback.
+//    - **Individual Lap Controls:**
+//      - **Time Adjustment:** `nudgePlayer` allows for fine-grained seeking on an individual player.
+//      - **Duration & Start Time Recalculation:**
+//        - `handleLapDurationChange`: Updates a lap's duration in the `lapData` state.
+//        - `recalculateFromLap`: Triggered after a duration change, this function recalculates the `startTime` for all subsequent laps and seeks their players to the new times.
+//        - `handleSetStartTimeFromPlayer`: Gets the current time from a player and uses it as a new anchor point, calling `recalculateFromLap` to update subsequent laps.
+//      - **Selection:** `handleLapSelect` adds/removes a lap's ID from the `selectedLaps` array.
+//
+// 4. **Fullscreen Comparison Grid (`handleEnterFsGrid` & `fsGridActive` view):**
+//    - `handleEnterFsGrid` is called when the "Ver (X)" button is clicked.
+//    - It captures the current playback time of each selected lap from the main grid and stores it in the `fullscreenTime` state.
+//    - It sets `fsGridActive` to true, which renders the fullscreen modal (`<div ref={fsGridRef} ...>`).
+//    - The browser's `requestFullscreen()` API is called on this modal.
+//    - Inside the modal, a new grid of `<YouTube>` players is rendered based on `selectedLaps`. The `onFsGridPlayerReady` function ensures each new player seeks to its captured time from the main grid.
+//    - This view has its own independent but synchronized controls (`handleFsGridPlayPause`, `seek` with `fsGridPlayerRefs`).
+//
+// 5. **Fullscreen Exit Synchronization (`useEffect` with `fullscreenchange`):**
+//    - An event listener on the `document` detects when the browser exits fullscreen mode.
+//    - If it detects an exit (`!document.fullscreenElement`), it identifies which video was the source (`fullscreenSource`).
+//    - It captures the final playback time from that source video.
+//    - It then programmatically seeks *all* players in the *main grid* to this captured time.
+//    - This ensures a seamless and synchronized transition back from any fullscreen view (single player or comparison grid) to the main analysis grid.
+//
+// --- Utility Functions ---
+// - `getYouTubeID`: Extracts the unique video ID from various YouTube URL formats.
+// - `timeToSeconds`, `lapTimeToSeconds`, `secondsToTime`: A suite of functions to handle conversions between "M:SS.ms" time formats and total seconds, which are necessary for all time calculations.
+
 import React, { useState, useRef, useEffect } from 'react';
 import YouTube from 'react-youtube';
 import { FaPlay, FaPause, FaBackward, FaForward, FaVolumeMute, FaVolumeUp, FaAngleDoubleLeft, FaAngleDoubleRight, FaSyncAlt, FaCrosshairs, FaExpand, FaCheckSquare, FaTimesCircle } from 'react-icons/fa';

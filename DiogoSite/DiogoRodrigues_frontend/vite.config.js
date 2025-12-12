@@ -3,10 +3,13 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
+  optimizeDeps: {
+    exclude: ['@duckdb/duckdb-wasm'],
+  },
   server: {
     proxy: {
       "/api": {
-        target: "https://diogorodrigues-backend.onrender.com",
+        target: "http://127.0.0.1:5000",
         changeOrigin: true,
       }
     }
